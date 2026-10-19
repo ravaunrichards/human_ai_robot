@@ -1,0 +1,11 @@
+{
+  "_comment": "Example app config. API keys are NOT here — they come from the environment only.",
+  "simulation_only": true,
+  "motion_enabled_default": false,
+  "joint_limits_path": "configuration/joint_limits/preliminary_limits.json",
+  "conversation_provider": "local",
+  "online_ai_enabled": false,
+  "speech_enabled": false,
+  "vision_enabled": false,
+  "log_level": "INFO"
+}

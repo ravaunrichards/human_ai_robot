@@ -1,0 +1,10 @@
+{
+  "_comment": "PRELIMINARY power configuration template. All ratings TBD until actuators/drivers selected.",
+  "source": "bench_psu",
+  "logic_rail_v": 12,
+  "actuator_bus_v": "TBD",
+  "actuator_bus_fuse_a": "TBD",
+  "estop": {"type": "manual_latching", "independent_of_software": true, "removes_actuator_power": true},
+  "contactor": {"present": true, "controlled_by": ["manual_estop", "safety_mcu"]},
+  "battery": {"present": false, "bms_required": true, "_note": "deferred; bench PSU first"}
+}

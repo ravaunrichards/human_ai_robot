@@ -1,0 +1,8 @@
+{
+  "_comment": "PRELIMINARY sensor configuration template. Addresses/buses are placeholders to be set from the selected hardware.",
+  "imu": {"present": false, "bus": "TBD", "rate_hz": 200},
+  "encoders": {"type": "absolute", "interface": "TBD", "count": 0},
+  "temperature": {"count": 0, "limit_c": 85, "_note": "limit placeholder; set from datasheets"},
+  "current": {"count": 0, "limit_a": 20, "_note": "limit placeholder; set from bus design"},
+  "foot_ft": {"present": false, "_note": "deferred to balance stage"}
+}

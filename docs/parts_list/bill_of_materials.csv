@@ -1,0 +1,37 @@
+category,part_name,function,quantity,required_spec,proposed_option,manufacturer_model,rating,required_accessories,est_price,currency,source_link,selection_status,compat_notes_risks
+Frame,Aluminium extrusion/brackets,Primary skeletal structure,1 set,6061-T6 / 7075 for high-load joints,CNC brackets + tube,not selected,structural,fasteners/bearings,unknown,,,candidate,Mass vs stiffness vs torque trade unresolved
+Actuator,Shoulder actuator,Shoulder pitch/roll/yaw,6,High torque low backlash backdrivable,QDD / harmonic+BLDC,not selected,torque TBD (>=~30-60 Nm est),driver+encoder,unknown,,,not_yet_selected,Torque not validated; sizing method in mechanical_design.md
+Actuator,Elbow actuator,Elbow flex,2,Medium torque,QDD / geared BLDC,not selected,torque TBD,driver+encoder,unknown,,,not_yet_selected,Depends on forearm mass budget
+Actuator,Wrist actuator,Wrist pitch/roll,4,Low-medium torque compact,geared BLDC/servo,not selected,torque TBD,driver+encoder,unknown,,,not_yet_selected,Packaging constrained
+Actuator,Hip actuator,Hip pitch/roll/yaw,6,Very high torque,harmonic+BLDC,not selected,torque TBD (highest),driver+encoder,unknown,,,not_yet_selected,Balance/walking is separate high-risk stage
+Actuator,Knee actuator,Knee flex,2,Very high torque,harmonic+BLDC,not selected,torque TBD,driver+encoder,unknown,,,not_yet_selected,Load-bearing; FEA required
+Actuator,Ankle actuator,Ankle pitch/roll,4,High torque fast,BLDC,not selected,torque TBD,driver+encoder+F/T,unknown,,,not_yet_selected,Balance-critical
+Actuator,Neck actuator,Neck yaw/pitch/roll,3,Low-medium torque quiet,geared servo/BLDC,not selected,torque TBD,driver+encoder,unknown,,,not_yet_selected,Safe travel limits required
+Actuator,Eye/eyelid/jaw micro-servo,Facial motion,5+,Small fast quiet,micro servo/coreless,not selected,low torque,linkages,unknown,,,candidate,Facial expression largely conceptual
+Actuator,Hand finger drive,Grasp (functional fingers),2-3,Compact,tendon+small motor,not selected,low torque,tendons/springs,unknown,,,candidate,Functional vs decorative fingers distinguished
+Sensor,Absolute encoder,Joint position,per joint,Absolute SPI/BiSS,not selected,not selected,3V3/5V,cabling,unknown,,,candidate,Absolute preferred for power-up safety
+Sensor,IMU,Body orientation/balance,1-2,6/9-DOF low noise,not selected,not selected,3V3,SPI/I2C,unknown,,,candidate,Needed before any balance work
+Sensor,Temperature sensor,Actuator/driver thermal,many,contact/NTC,not selected,not selected,low,wiring,unknown,,,candidate,Feeds safety MCU
+Sensor,Current sense,Bus/branch current,several,hall/shunt,not selected,not selected,bus V,wiring,unknown,,,candidate,Over-current fault input
+Sensor,Foot force/torque,Balance (later stage),2,6-axis F/T,not selected,not selected,TBD,cabling,unknown,,,not_yet_selected,Deferred to balance commissioning
+Controller,Safety MCU,Independent safety/estop/watchdog,1,automotive/industrial MCU,not selected,not selected,logic V,board+firmware,unknown,,,candidate,Must be independent of host
+Controller,Motion MCU,Real-time joint coordination,1,high-perf MCU + CAN FD,not selected,not selected,logic V,board+firmware,unknown,,,candidate,Runs host watchdog
+Controller,Joint driver,Closed-loop motor control,per joint,FOC BLDC driver,not selected,not selected,bus V,heatsink,unknown,,,not_yet_selected,Must match chosen actuators
+Compute,Host computer,AI/speech/vision/behaviour,1,GPU/NPU capable SBC or mini-PC,not selected,not selected,logic V,storage+cooling,unknown,,,candidate,On-device models preferred for privacy
+Power,DC bench PSU,Commissioning power,1,adjustable high-current,not selected,not selected,bus V,leads,unknown,,,candidate,Recommended before any battery
+Power,Battery pack+BMS,Untethered power (later),1,protected pack+BMS,not selected,not selected,bus V,charger,unknown,,,not_yet_selected,Battery safety not validated
+Power,Contactor/relay,Actuator-bus power switching,1,rated for bus V/current,not selected,not selected,bus V,coil driver,unknown,,,candidate,Part of hardware e-stop
+Safety,E-STOP switch,Manual emergency stop,1+,latching mushroom NC,not selected,not selected,loop V,enclosure,unknown,,,candidate,MANDATORY; independent of software
+Electrical,Fuses/breakers,Circuit protection,several,rated to wiring+stall,not selected,not selected,bus V,holders,unknown,,,not_yet_selected,Ratings from actuator datasheets
+Electrical,Connectors,Keyed power/signal connectors,many,keyed lockable,not selected,not selected,various,crimp tools,unknown,,,candidate,Label per connector_identification.md
+Cable,Shielded signal cable,Encoder/bus wiring,bulk,shielded twisted pair,not selected,not selected,low,looms,unknown,,,candidate,Shield grounded one end
+Cable,Power cable,Actuator bus wiring,bulk,rated to current,not selected,not selected,bus V,lugs,unknown,,,not_yet_selected,Gauge from current budget
+Audio,Microphone array,Speech input,1,USB/I2S multi-mic,not selected,not selected,5V/3V3,mount,unknown,,,candidate,On-device STT preferred
+Audio,Speaker+amp,Speech output,1,compact full-range+amp,not selected,not selected,audio,mount,unknown,,,candidate,
+Vision,Camera,Perception input,1-2,USB/MIPI color,not selected,not selected,5V,mount,unknown,,,candidate,Privacy controls apply
+Exterior,Face shell silicone,Replaceable face skin,1,platinum-cure silicone,not selected,not selected,n/a,mold+pigments,unknown,,,not_yet_selected,Realistic skin is R&D; unvalidated
+Exterior,Body panels,Replaceable covers,1 set,3D-print/thermoform,not selected,not selected,n/a,fasteners,unknown,,,candidate,Non load-bearing
+Bearings,Joint bearings,Low-friction rotation,many,angular/deep-groove,not selected,not selected,load TBD,seats,unknown,,,candidate,Sized after loads known
+Fasteners,Screws/inserts,Assembly,many,metric SHCS+threaded inserts,generic,generic,n/a,threadlocker,unknown,,,candidate,
+Tools,Hand/power tools,Assembly,1 set,metric drivers etc,generic,generic,n/a,,unknown,,,candidate,
+PPE,Protective equipment,Operator safety,1 set,gloves/eye/guard,generic,generic,n/a,,unknown,,,candidate,Required during commissioning

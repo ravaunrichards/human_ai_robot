@@ -1,0 +1,27 @@
+{
+  "_comment": "PRELIMINARY / PLACEHOLDER joint limits. NOT verified against real hardware. 'verified' is false for every joint on purpose, which prevents enable_motion() from ever succeeding until a qualified engineer measures real mechanical stops and sets verified=true per joint. Do NOT treat these numbers as safe.",
+  "schema_version": 1,
+  "units": {"angle": "degrees", "velocity": "degrees_per_second"},
+  "joints": {
+    "neck_yaw":      {"min_deg": -60, "max_deg": 60,  "max_velocity_dps": 60, "verified": false},
+    "neck_pitch":    {"min_deg": -25, "max_deg": 25,  "max_velocity_dps": 60, "verified": false},
+    "neck_roll":     {"min_deg": -20, "max_deg": 20,  "max_velocity_dps": 45, "verified": false},
+    "jaw":           {"min_deg": 0,   "max_deg": 20,  "max_velocity_dps": 90, "verified": false},
+    "eye_left_yaw":  {"min_deg": -30, "max_deg": 30,  "max_velocity_dps": 200,"verified": false},
+    "eye_right_yaw": {"min_deg": -30, "max_deg": 30,  "max_velocity_dps": 200,"verified": false},
+    "eyelid_left":   {"min_deg": 0,   "max_deg": 25,  "max_velocity_dps": 300,"verified": false},
+    "eyelid_right":  {"min_deg": 0,   "max_deg": 25,  "max_velocity_dps": 300,"verified": false},
+    "shoulder_l_pitch": {"min_deg": -90, "max_deg": 90, "max_velocity_dps": 45, "verified": false},
+    "shoulder_r_pitch": {"min_deg": -90, "max_deg": 90, "max_velocity_dps": 45, "verified": false},
+    "elbow_l":       {"min_deg": 0,   "max_deg": 135, "max_velocity_dps": 60, "verified": false},
+    "elbow_r":       {"min_deg": 0,   "max_deg": 135, "max_velocity_dps": 60, "verified": false},
+    "wrist_l":       {"min_deg": -45, "max_deg": 45,  "max_velocity_dps": 90, "verified": false},
+    "wrist_r":       {"min_deg": -45, "max_deg": 45,  "max_velocity_dps": 90, "verified": false},
+    "hip_l_pitch":   {"min_deg": -30, "max_deg": 90,  "max_velocity_dps": 30, "verified": false},
+    "hip_r_pitch":   {"min_deg": -30, "max_deg": 90,  "max_velocity_dps": 30, "verified": false},
+    "knee_l":        {"min_deg": 0,   "max_deg": 130, "max_velocity_dps": 30, "verified": false},
+    "knee_r":        {"min_deg": 0,   "max_deg": 130, "max_velocity_dps": 30, "verified": false},
+    "ankle_l":       {"min_deg": -20, "max_deg": 20,  "max_velocity_dps": 30, "verified": false},
+    "ankle_r":       {"min_deg": -20, "max_deg": 20,  "max_velocity_dps": 30, "verified": false}
+  }
+}
