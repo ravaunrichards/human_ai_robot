@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "human_ai_robot"
+version = "0.1.0"
+description = "Engineering + software project for a human-sized female-presenting humanoid robot (simulation-first, safety-gated)."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { file = "LICENSE" }
+authors = [{ name = "human_ai_robot contributors" }]
+keywords = ["robotics", "humanoid", "simulation", "safety", "motion-planning"]
+
+# Core library has ZERO hard third-party dependencies so the simulation and
+# tests run on a clean Python install. Optional backends are extras.
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest>=7"]
+yaml = ["pyyaml>=6"]
+dev = ["pytest>=7", "pyyaml>=6", "ruff>=0.1", "mypy>=1.5"]
+# Real backends (install only what you actually use):
+speech = ["vosk", "piper-tts", "webrtcvad", "sounddevice"]
+vision = ["opencv-python", "numpy"]
+online-ai = ["httpx"]
+
+[project.scripts]
+human-ai-robot = "software.app:main"
+
+[tool.setuptools]
+packages = [
+    "software",
+    "software.conversation",
+    "software.speech",
+    "software.vision",
+    "software.motion_planner",
+    "software.diagnostics",
+    "software.hardware_interfaces",
+    "software.configuration",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"

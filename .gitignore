@@ -1,0 +1,44 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secrets & local config — NEVER commit
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+secrets/
+credentials*.json
+
+# Local calibration captured from real hardware
+configuration/calibration/*.local.json
+configuration/calibration/measured_*.json
+
+# Logs / recordings
+*.log
+logs/
+recordings/
+vision_captures/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# CAD / build artifacts
+*.stl.bak
+hardware/cad/exports/
