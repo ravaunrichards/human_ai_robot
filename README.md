@@ -11,6 +11,18 @@ physical build, not a manufactured machine.
 > robot only; it cannot and does not drive real motors. A physical build
 > requires qualified engineers and the staged commissioning in `docs/safety/`.
 
+## Engineering Blueprint Studio (visual, browser-based)
+
+Open **`docs/engineering-blueprints/index.html`** in any normal browser
+(Android phone, tablet or laptop) for an offline, interactive visual guide to
+the internal **skeleton**: labelled front/rear/side/three-quarter skeleton
+views, exploded assemblies (spine, shoulder, elbow, pelvis/hip, knee,
+ankle/foot) with BOM-linked numbered parts, a dimensioned fabrication envelope
+with confidence classes, a component catalogue, a 10-stage assembly guide, an
+editable measurement worksheet, and downloadable PDF/SVG exports. It needs no
+server, build step or CAD software. **Preliminary / unverified — not for
+fabrication.** See `docs/engineering-blueprints/README.md`.
+
 ## What this project builds
 - A modular **AI-computer software stack** (Python): conversation, speech,
   vision, motion planning, diagnostics, hardware abstraction, configuration.
