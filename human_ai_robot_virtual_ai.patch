@@ -1,0 +1,1134 @@
+diff --git a/APPLY_TO_REPO.md b/APPLY_TO_REPO.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..6ba6713abae128274237de58d622065a66ed3287
+--- /dev/null
++++ b/APPLY_TO_REPO.md
+@@ -0,0 +1,37 @@
++# Apply this virtual AI web update to the existing repository
++
++This is an **additions-only overlay** for `ravaunrichards/human_ai_robot`. The following paths were checked on 2026-10-26 and did not exist in the repository, so the overlay will not replace existing source files:
++
++- `software/virtual_ai_service.py`
++- `software/web_server.py`
++- `web/index.html`
++- `web/app.css`
++- `web/app.js`
++- `tests/test_virtual_ai_service.py`
++- `docs/virtual_ai_web.md`
++
++## Apply
++
++Extract this ZIP into the root of a fresh checkout of `https://github.com/ravaunrichards/human_ai_robot`. Keep the directory structure shown above. Do not copy any API key into these files.
++
++## Run locally
++
++From the repository root, configure a real API key on the computer/server (not in the browser):
++
++**Linux/macOS:** `export OPENAI_API_KEY='your-key'`
++
++**Windows PowerShell:** `$env:OPENAI_API_KEY = 'your-key'`
++
++Then run `python -m software.web_server` and open `http://127.0.0.1:8765`. See `docs/virtual_ai_web.md` for LAN sharing, a shared access token, and hosted deployment guidance.
++
++To share one conversation on a phone and computer on the same Wi-Fi network, set `ROBOT_ACCESS_TOKEN` and run `python -m software.web_server --host 0.0.0.0`. Open the computer's LAN IP and port 8765 on the phone, then enter the same access token on both devices. Never expose this raw server directly to the public internet; use a hosted HTTPS service and protected environment variables for remote access.
++
++Run the added unit tests with `python -m unittest discover -s tests -p 'test_virtual_ai_service.py' -v`.
++
++## Safety and limits
++
++- No OpenAI API key is bundled.
++- No fake/echo response is used for browser chat. Without a real model credential, chat is blocked with a clear setup message.
++- The avatar is an interface illustration, not a physical robot or an asserted 3D simulation.
++- Real hardware motion remains disabled.
++- Shared conversation history is held in server memory and clears when the server restarts.
+diff --git a/docs/virtual_ai_web.md b/docs/virtual_ai_web.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..40d001bb751126a0ccda5a3e0e3ca928caf06d73
+--- /dev/null
++++ b/docs/virtual_ai_web.md
+@@ -0,0 +1,91 @@
++# Run the human_ai_robot virtual AI in a browser
++
++This adds a mobile-friendly browser interface to the existing repository. It reuses `software.conversation.OnlineProvider` and `Message`, but intentionally does **not** use the legacy echo fallback for browser conversations. If the real model is not configured or the provider fails, the UI shows an error instead of inventing an AI reply.
++
++## 1. Requirements
++
++- Python 3.9 or newer.
++- A valid OpenAI API key with API access and available billing/credits. ChatGPT subscriptions and API usage are separate; do not put the key in frontend JavaScript or commit it to Git.
++- Internet access from the server to the AI API.
++
++## 2. Start the server
++
++From the repository root:
++
++**Linux / macOS**
++
++```sh
++export OPENAI_API_KEY='paste-your-key-here'
++export OPENAI_MODEL='gpt-5.5'  # optional; use a model enabled for your API account
++python -m software.web_server
++```
++
++**Windows PowerShell**
++
++```powershell
++$env:OPENAI_API_KEY = 'paste-your-key-here'
++$env:OPENAI_MODEL = 'gpt-5.5'  # optional; use a model enabled for your API account
++python -m software.web_server
++```
++
++Then open `http://127.0.0.1:8765` on the computer running the server. The API key is read server-side only. The default server uses the standard-library HTTP server and does not require FastAPI or another framework.
++
++The server calls the OpenAI-compatible Chat Completions API using the official `/v1/chat/completions` endpoint shape. `OPENAI_BASE_URL` can change the API base for an OpenAI-compatible provider. If the account does not have access to the configured model, change `OPENAI_MODEL` to a model available to that account.
++
++## 3. Use it from phone and computer on one Wi-Fi network
++
++Run the server on a trusted computer. Set an access token before allowing other devices to connect:
++
++**Linux / macOS**
++
++```sh
++export ROBOT_ACCESS_TOKEN='use-a-long-unique-random-secret'
++python -m software.web_server --host 0.0.0.0 --port 8765
++```
++
++**Windows PowerShell**
++
++```powershell
++$env:ROBOT_ACCESS_TOKEN = 'use-a-long-unique-random-secret'
++python -m software.web_server --host 0.0.0.0 --port 8765
++```
++
++Find the computer's private LAN IP address (for example, `192.168.1.20`) and open `http://192.168.1.20:8765` on the phone. Replace the example address with the computer's actual address. Enter the same `ROBOT_ACCESS_TOKEN` on both devices. The server owns one shared in-memory conversation; messages from either device appear in both interfaces within a few seconds.
++
++The access token protects the chat, history, and reset endpoints. The service refuses to bind to a non-loopback address without this token. Use only on a trusted LAN. For access across the internet, deploy behind a properly configured HTTPS reverse proxy or authenticated hosting platform; do not expose the raw HTTP server directly to the public internet.
++
++## Configuration variables
++
++| Variable | Default | Purpose |
++|---|---|---|
++| `OPENAI_API_KEY` | none | Server-side API credential. Without it, chat is disabled and no fake reply is produced. |
++| `OPENAI_MODEL` | `gpt-5.5` | Model identifier enabled for the API account. |
++| `OPENAI_BASE_URL` | `https://api.openai.com/v1` | API base URL; supports compatible endpoints. |
++| `ROBOT_AI_SYSTEM_PROMPT` | built-in robotics-safe prompt | Optional replacement instruction for the conversational model. |
++| `ROBOT_HOST` | `127.0.0.1` | Listener address; non-loopback binding requires an access token. |
++| `ROBOT_PORT` | `8765` | Listener port. |
++| `ROBOT_ACCESS_TOKEN` | none | Required for non-loopback hosting; same secret must be entered on every device. |
++
++
++## Deploy for access beyond your Wi-Fi
++
++The same app can run on one hosted Python web service and serve both the phone and computer. On a platform such as Render, connect the repository **after adding these new files**, set the build command to `pip install -e .`, and the start command to `python -m software.web_server --host 0.0.0.0`. Configure `OPENAI_API_KEY`, `ROBOT_ACCESS_TOKEN`, and optionally `OPENAI_MODEL` as protected environment variables in the hosting dashboard—not in source code. The server reads the platform's `PORT` variable automatically. Use the platform's HTTPS URL, enter the same access token on both devices, and keep a single server instance because this first version shares conversation state in process memory. Choose an always-on plan if you need consistent availability; a platform that sleeps or restarts may interrupt the session and clear history.
++
++## Honest current limits
++
++- This is a real model-backed chat UI only after the server is configured with a valid API key and an accessible model. The status endpoint reports configuration; a successful first response verifies the provider credentials/model.
++- The avatar is an interface illustration, not a rendered 3D body, webcam feed, or robot hardware.
++- History is shared in server memory while the server runs, but is not persisted across server restarts.
++- Voice input uses the browser's built-in speech recognition when available. Spoken AI output uses the device's speech synthesis. Browser support and microphone permission vary by device.
++- The web UI does not send motion commands. Physical movement remains disabled and must continue to be controlled by the repository's independent safety gate and real-time layer.
++- The Python server is a single-owner starting point, not an internet-hardened multi-user service. Use HTTPS, strong access control, rate limits, and managed secrets before public deployment.
++
++## Tests
++
++The added unit tests cover unconfigured-provider behaviour, real-provider adapter integration via a test double, non-fallback on provider failure, input limits, and shared-session reset:
++
++```sh
++python -m unittest tests.test_virtual_ai_service -v
++```
++
++These tests do not make real paid API calls. A live API check should be done manually after setting `OPENAI_API_KEY`.
+diff --git a/software/virtual_ai_service.py b/software/virtual_ai_service.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..bfe14a872a232be81fc6d9695b4befaf7e5af3bd
+--- /dev/null
++++ b/software/virtual_ai_service.py
+@@ -0,0 +1,192 @@
++"""Strict, shared conversation service for the browser-based virtual robot.
++
++Unlike the legacy developer loop, this service never falls back to EchoProvider.
++If a real model is not configured or its request fails, it raises an explicit
++error rather than presenting a canned response as an AI-generated answer.
++"""
++from __future__ import annotations
++
++import json
++import os
++import threading
++import urllib.error
++import urllib.request
++from typing import Callable, Dict, List, Optional
++
++from software.conversation import ConversationError, Message, OnlineProvider
++
++
++DEFAULT_SYSTEM_PROMPT = (
++    "You are the conversational intelligence for human_ai_robot, a virtual AI "
++    "companion connected to a humanoid robotics engineering project. Be helpful, "
++    "honest, warm, and clear. You are currently running in software simulation "
++    "only: you have no physical body, no live camera or microphone access unless "
++    "a capability is explicitly connected, and you cannot move real motors. "
++    "Never claim a physical action or sensor observation occurred when it did not. "
++    "When asked about robotics, prioritise safety and distinguish implemented "
++    "features from proposed features."
++)
++
++
++class VirtualAIError(RuntimeError):
++    """Base error suitable for reporting a safe, user-facing service problem."""
++
++
++class AINotConfigured(VirtualAIError):
++    """Raised when no real model credentials are configured."""
++
++
++class AIProviderFailure(VirtualAIError):
++    """Raised when the real model provider fails or returns invalid data."""
++
++
++def _openai_compatible_request(
++    messages: List[Message],
++    *,
++    api_key: str,
++    model: str,
++    base_url: str,
++    timeout_seconds: float = 60.0,
++) -> str:
++    """Call an OpenAI-compatible Chat Completions endpoint using the stdlib."""
++    endpoint = base_url.rstrip("/") + "/chat/completions"
++    payload = {
++        "model": model,
++        "messages": [{"role": item.role, "content": item.content} for item in messages],
++        "max_completion_tokens": 800,
++    }
++    request = urllib.request.Request(
++        endpoint,
++        data=json.dumps(payload).encode("utf-8"),
++        headers={
++            "Authorization": "Bearer " + api_key,
++            "Content-Type": "application/json",
++            "Accept": "application/json",
++            "User-Agent": "human-ai-robot/virtual-ai",
++        },
++        method="POST",
++    )
++    try:
++        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
++            response_body = response.read(2_000_000).decode("utf-8", errors="replace")
++    except urllib.error.HTTPError as exc:
++        # Do not return request headers or the API key in diagnostics.
++        try:
++            body = exc.read(4000).decode("utf-8", errors="replace")
++            data = json.loads(body) if body else {}
++            detail = data.get("error", {}).get("message", "") if isinstance(data, dict) else ""
++        except Exception:  # noqa: BLE001
++            detail = ""
++        detail = str(detail).strip()[:500]
++        suffix = (": " + detail) if detail else ""
++        raise AIProviderFailure("AI provider returned HTTP %s%s" % (exc.code, suffix)) from None
++    except (urllib.error.URLError, TimeoutError, OSError) as exc:
++        # The exception text can contain host information but never the secret.
++        reason = getattr(exc, "reason", None)
++        description = str(reason or exc.__class__.__name__)[:300]
++        raise AIProviderFailure("Could not reach the AI provider: " + description) from None
++
++    try:
++        data = json.loads(response_body)
++        choices = data["choices"]
++        content = choices[0]["message"]["content"]
++    except (json.JSONDecodeError, KeyError, IndexError, TypeError) as exc:
++        raise AIProviderFailure("AI provider returned an unrecognised response format") from exc
++    if not isinstance(content, str) or not content.strip():
++        raise AIProviderFailure("AI provider returned an empty response")
++    return content.strip()
++
++
++class VirtualAIService:
++    """One conversation shared by every browser connected to this server."""
++
++    def __init__(
++        self,
++        *,
++        api_key: Optional[str] = None,
++        model: Optional[str] = None,
++        base_url: Optional[str] = None,
++        system_prompt: Optional[str] = None,
++        request_fn: Optional[Callable[[List[Message]], str]] = None,
++        history_limit: int = 40,
++    ) -> None:
++        self.api_key = (os.environ.get("OPENAI_API_KEY", "") if api_key is None else api_key).strip()
++        self.model = (model or os.environ.get("OPENAI_MODEL") or "gpt-5.5").strip()
++        self.base_url = (base_url or os.environ.get("OPENAI_BASE_URL") or "https://api.openai.com/v1").strip().rstrip("/")
++        self._lock = threading.RLock()
++        self._history_limit = max(4, int(history_limit))
++        self._history: List[Message] = [
++            Message("system", system_prompt or os.environ.get("ROBOT_AI_SYSTEM_PROMPT") or DEFAULT_SYSTEM_PROMPT)
++        ]
++        if request_fn is not None:
++            client = request_fn
++        elif self.api_key:
++            client = lambda messages: _openai_compatible_request(
++                messages,
++                api_key=self.api_key,
++                model=self.model,
++                base_url=self.base_url,
++            )
++        else:
++            client = None
++        self._provider = (
++            OnlineProvider(client=client, api_key=self.api_key)
++            if client is not None and self.api_key
++            else None
++        )
++
++    def status(self) -> Dict[str, object]:
++        with self._lock:
++            return {
++                "service": "human_ai_robot",
++                "ai_configured": self._provider is not None,
++                "provider": "OpenAI-compatible Chat Completions" if self._provider else "Not configured",
++                "model": self.model if self._provider else None,
++                "conversation_messages": sum(1 for item in self._history if item.role in ("user", "assistant")),
++                "simulation_only": True,
++                "motion_control": "disabled",
++                "reply_fallback": False,
++            }
++
++    def history(self) -> List[Dict[str, str]]:
++        with self._lock:
++            return [
++                {"role": item.role, "content": item.content}
++                for item in self._history
++                if item.role in ("user", "assistant")
++            ]
++
++    def reply(self, text: str) -> str:
++        cleaned = text.strip()
++        if not cleaned:
++            raise ValueError("Message cannot be empty.")
++        if len(cleaned) > 4000:
++            raise ValueError("Message is too long; limit is 4,000 characters.")
++        if self._provider is None:
++            raise AINotConfigured(
++                "No real AI model is configured. Set OPENAI_API_KEY on the server and restart it. "
++                "This interface deliberately does not generate demo or echo replies."
++            )
++
++        # Serialise calls so two devices cannot race each other and see divergent turns.
++        with self._lock:
++            candidate = [self._history[0]] + self._history[1:]
++            candidate.append(Message("user", cleaned))
++            try:
++                answer = self._provider.generate(candidate)
++            except ConversationError as exc:
++                raise AIProviderFailure(str(exc)) from None
++            except VirtualAIError:
++                raise
++            if not isinstance(answer, str) or not answer.strip():
++                raise AIProviderFailure("The AI provider returned no text.")
++            self._history = candidate + [Message("assistant", answer.strip())]
++            non_system = self._history[1:]
++            if len(non_system) > self._history_limit:
++                non_system = non_system[-self._history_limit :]
++            self._history = [self._history[0]] + non_system
++            return answer.strip()
++
++    def clear_history(self) -> None:
++        with self._lock:
++            self._history = [self._history[0]]
+diff --git a/software/web_server.py b/software/web_server.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..5ba0019e237a5af0923adaef8dc3c9d2f51847d8
+--- /dev/null
++++ b/software/web_server.py
+@@ -0,0 +1,206 @@
++"""Small dependency-free HTTP server for the synchronised virtual AI UI.
++
++Run with: python -m software.web_server
++The listener defaults to loopback. Binding to a non-loopback address requires
++ROBOT_ACCESS_TOKEN so an accidentally exposed deployment cannot spend API
++credits or expose the shared conversation without a token.
++"""
++from __future__ import annotations
++
++import argparse
++import hmac
++import ipaddress
++import json
++import os
++from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
++from pathlib import Path
++from typing import Dict, Optional, Tuple
++from urllib.parse import urlparse
++
++from software.virtual_ai_service import AINotConfigured, AIProviderFailure, VirtualAIService
++
++
++ROOT = Path(__file__).resolve().parents[1]
++WEB_ROOT = ROOT / "web"
++MIME_TYPES = {
++    ".html": "text/html; charset=utf-8",
++    ".css": "text/css; charset=utf-8",
++    ".js": "text/javascript; charset=utf-8",
++    ".svg": "image/svg+xml",
++    ".png": "image/png",
++    ".ico": "image/x-icon",
++}
++MAX_REQUEST_BYTES = 16_384
++
++
++def _is_loopback(host: str) -> bool:
++    if host.lower() == "localhost":
++        return True
++    try:
++        return ipaddress.ip_address(host) in ipaddress.ip_network("127.0.0.0/8") or ipaddress.ip_address(host).is_loopback
++    except ValueError:
++        return False
++
++
++def make_handler(service: VirtualAIService, access_token: str):
++    class VirtualAIHandler(BaseHTTPRequestHandler):
++        server_version = "human-ai-robot/1.0"
++
++        def log_message(self, fmt: str, *args) -> None:
++            # Do not log request bodies, auth headers, or conversation contents.
++            super().log_message(fmt, *args)
++
++        def _headers(self, content_type: str, length: int) -> None:
++            self.send_header("Content-Type", content_type)
++            self.send_header("Content-Length", str(length))
++            self.send_header("X-Content-Type-Options", "nosniff")
++            self.send_header("Referrer-Policy", "no-referrer")
++            self.send_header("X-Frame-Options", "DENY")
++            self.send_header("Content-Security-Policy", "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
++
++        def _send_json(self, status: int, payload: Dict[str, object]) -> None:
++            body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
++            self.send_response(status)
++            self._headers("application/json; charset=utf-8", len(body))
++            self.send_header("Cache-Control", "no-store")
++            self.end_headers()
++            self.wfile.write(body)
++
++        def _authorised(self) -> bool:
++            if not access_token:
++                return True
++            supplied = self.headers.get("Authorization", "")
++            if supplied.lower().startswith("bearer "):
++                supplied = supplied[7:].strip()
++            else:
++                supplied = self.headers.get("X-Robot-Access-Token", "")
++            return hmac.compare_digest(supplied, access_token)
++
++        def _require_auth(self) -> bool:
++            if self._authorised():
++                return True
++            self._send_json(401, {"error": "Access key required or invalid.", "requires_access_token": True})
++            return False
++
++        def _read_json(self) -> Dict[str, object]:
++            raw_length = self.headers.get("Content-Length", "0")
++            try:
++                length = int(raw_length)
++            except ValueError as exc:
++                raise ValueError("Invalid Content-Length.") from exc
++            if length < 0 or length > MAX_REQUEST_BYTES:
++                raise ValueError("Request is too large.")
++            raw = self.rfile.read(length)
++            try:
++                data = json.loads(raw.decode("utf-8"))
++            except (UnicodeDecodeError, json.JSONDecodeError) as exc:
++                raise ValueError("Request must contain valid JSON.") from exc
++            if not isinstance(data, dict):
++                raise ValueError("Request body must be a JSON object.")
++            return data
++
++        def do_GET(self) -> None:  # noqa: N802
++            path = urlparse(self.path).path
++            if path in ("/api/status", "/api/health"):
++                payload = service.status()
++                payload["requires_access_token"] = bool(access_token)
++                payload["message"] = (
++                    "Real AI provider configured; first reply still verifies API access."
++                    if payload["ai_configured"]
++                    else "AI is not configured. Set OPENAI_API_KEY on the server; no sample replies are generated."
++                )
++                self._send_json(200, payload)
++                return
++            if path == "/api/history":
++                if not self._require_auth():
++                    return
++                self._send_json(200, {"messages": service.history()})
++                return
++
++            relative = "index.html" if path in ("/", "/index.html") else path.lstrip("/")
++            candidate = (WEB_ROOT / relative).resolve()
++            try:
++                candidate.relative_to(WEB_ROOT.resolve())
++            except ValueError:
++                self._send_json(404, {"error": "Not found."})
++                return
++            if not candidate.is_file() or candidate.suffix.lower() not in MIME_TYPES:
++                self._send_json(404, {"error": "Not found."})
++                return
++            try:
++                body = candidate.read_bytes()
++            except OSError:
++                self._send_json(500, {"error": "Could not read application asset."})
++                return
++            self.send_response(200)
++            self._headers(MIME_TYPES[candidate.suffix.lower()], len(body))
++            self.send_header("Cache-Control", "no-cache" if candidate.name == "index.html" else "public, max-age=300")
++            self.end_headers()
++            self.wfile.write(body)
++
++        def do_POST(self) -> None:  # noqa: N802
++            path = urlparse(self.path).path
++            if path not in ("/api/chat", "/api/reset"):
++                self._send_json(404, {"error": "Not found."})
++                return
++            if not self._require_auth():
++                return
++            try:
++                data = self._read_json()
++                if path == "/api/reset":
++                    service.clear_history()
++                    self._send_json(200, {"ok": True, "messages": []})
++                    return
++                message = data.get("message")
++                if not isinstance(message, str):
++                    raise ValueError("Message must be a string.")
++                answer = service.reply(message)
++                self._send_json(200, {"reply": answer, "messages": service.history()})
++            except ValueError as exc:
++                self._send_json(400, {"error": str(exc)})
++            except AINotConfigured as exc:
++                self._send_json(503, {"error": str(exc), "ai_configured": False})
++            except AIProviderFailure as exc:
++                self._send_json(502, {"error": str(exc), "ai_configured": True})
++            except Exception as exc:  # noqa: BLE001
++                # Return a generic error; never expose traceback/config/secrets.
++                print("Virtual AI internal error: %s" % exc.__class__.__name__)
++                self._send_json(500, {"error": "Unexpected server error. Check server logs."})
++
++    return VirtualAIHandler
++
++
++def main(argv: Optional[list] = None) -> int:
++    parser = argparse.ArgumentParser(description="Run the human_ai_robot synchronised virtual AI web app.")
++    parser.add_argument("--host", default=os.environ.get("ROBOT_HOST", "127.0.0.1"), help="Bind address (non-loopback requires ROBOT_ACCESS_TOKEN).")
++    parser.add_argument("--port", type=int, default=int(os.environ.get("ROBOT_PORT", os.environ.get("PORT", "8765"))), help="TCP port (default: ROBOT_PORT, platform PORT, or 8765).")
++    args = parser.parse_args(argv)
++    if not 1 <= args.port <= 65535:
++        parser.error("--port must be between 1 and 65535")
++
++    access_token = os.environ.get("ROBOT_ACCESS_TOKEN", "").strip()
++    if not _is_loopback(args.host) and not access_token:
++        parser.error("ROBOT_ACCESS_TOKEN is required when binding to a non-loopback address.")
++    if not (WEB_ROOT / "index.html").is_file():
++        parser.error("web/index.html is missing; install the complete repository, not just software/.")
++
++    service = VirtualAIService()
++    server = ThreadingHTTPServer((args.host, args.port), make_handler(service, access_token))
++    print("human_ai_robot virtual AI server")
++    print("URL: http://%s:%s" % (args.host, args.port))
++    print("AI provider: %s" % (service.model if service.status()["ai_configured"] else "NOT CONFIGURED — set OPENAI_API_KEY"))
++    print("Mode: SIMULATION ONLY; real motor control disabled")
++    if access_token:
++        print("Remote access: access-key protection enabled")
++    print("Stop with Ctrl+C.")
++    try:
++        server.serve_forever(poll_interval=0.5)
++    except KeyboardInterrupt:
++        print("\nStopping virtual AI server...")
++    finally:
++        server.server_close()
++    return 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/test_virtual_ai_service.py b/tests/test_virtual_ai_service.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..62aeb1962beb471acae6ac567006ee54b86730ef
+--- /dev/null
++++ b/tests/test_virtual_ai_service.py
+@@ -0,0 +1,105 @@
++"""Safety and behaviour tests for the live browser AI service."""
++import json
++import threading
++import unittest
++from http.server import BaseHTTPRequestHandler, HTTPServer
++
++from software.virtual_ai_service import AINotConfigured, AIProviderFailure, VirtualAIService
++
++
++class VirtualAIServiceTests(unittest.TestCase):
++    def test_missing_key_fails_explicitly_without_creating_fake_reply(self):
++        service = VirtualAIService(api_key="", request_fn=None)
++        self.assertFalse(service.status()["ai_configured"])
++        with self.assertRaises(AINotConfigured):
++            service.reply("Hello")
++        self.assertEqual(service.history(), [])
++
++    def test_real_provider_reply_is_shared_in_history(self):
++        def real_provider_for_test(messages):
++            self.assertEqual(messages[-1].role, "user")
++            return "Test-provider response used by this unit test."
++
++        service = VirtualAIService(api_key="unit-test-key", request_fn=real_provider_for_test)
++        answer = service.reply("Hello from the test")
++        self.assertEqual(answer, "Test-provider response used by this unit test.")
++        history = service.history()
++        self.assertEqual([item["role"] for item in history], ["user", "assistant"])
++        self.assertEqual(history[0]["content"], "Hello from the test")
++        self.assertEqual(history[1]["content"], answer)
++        self.assertTrue(service.status()["ai_configured"])
++        self.assertTrue(service.status()["simulation_only"])
++        self.assertEqual(service.status()["motion_control"], "disabled")
++        self.assertFalse(service.status()["reply_fallback"])
++
++    def test_provider_failure_is_not_replaced_by_echo(self):
++        def failing_provider(_messages):
++            raise RuntimeError("provider unavailable")
++
++        service = VirtualAIService(api_key="unit-test-key", request_fn=failing_provider)
++        with self.assertRaises(AIProviderFailure):
++            service.reply("Do not fabricate a reply")
++        self.assertEqual(service.history(), [])
++
++    def test_empty_and_oversized_messages_are_rejected(self):
++        service = VirtualAIService(api_key="unit-test-key", request_fn=lambda _messages: "ok")
++        with self.assertRaises(ValueError):
++            service.reply("   ")
++        with self.assertRaises(ValueError):
++            service.reply("x" * 4001)
++        self.assertEqual(service.history(), [])
++
++
++    def test_openai_compatible_http_request_uses_server_key_and_parses_real_response_shape(self):
++        captured = {}
++
++        class ProviderHandler(BaseHTTPRequestHandler):
++            def do_POST(self):  # noqa: N802
++                captured["path"] = self.path
++                captured["authorization"] = self.headers.get("Authorization")
++                length = int(self.headers.get("Content-Length", "0"))
++                captured["payload"] = json.loads(self.rfile.read(length).decode("utf-8"))
++                body = json.dumps({"choices": [{"message": {"role": "assistant", "content": "Response from the test HTTP provider."}}]}).encode("utf-8")
++                self.send_response(200)
++                self.send_header("Content-Type", "application/json")
++                self.send_header("Content-Length", str(len(body)))
++                self.end_headers()
++                self.wfile.write(body)
++
++            def log_message(self, _fmt, *_args):
++                return
++
++        server = HTTPServer(("127.0.0.1", 0), ProviderHandler)
++        worker = threading.Thread(target=server.serve_forever, daemon=True)
++        worker.start()
++        try:
++            service = VirtualAIService(
++                api_key="unit-test-secret",
++                model="unit-test-model",
++                base_url="http://127.0.0.1:%s/v1" % server.server_port,
++            )
++            answer = service.reply("Hello from the browser")
++        finally:
++            server.shutdown()
++            server.server_close()
++            worker.join(timeout=2)
++
++        self.assertEqual(answer, "Response from the test HTTP provider.")
++        self.assertEqual(captured["path"], "/v1/chat/completions")
++        self.assertEqual(captured["authorization"], "Bearer unit-test-secret")
++        self.assertEqual(captured["payload"]["model"], "unit-test-model")
++        self.assertEqual(captured["payload"]["messages"][-1], {"role": "user", "content": "Hello from the browser"})
++        self.assertNotIn("unit-test-secret", json.dumps(captured["payload"]))
++
++    def test_reset_clears_shared_conversation_but_preserves_system_instruction(self):
++        service = VirtualAIService(api_key="unit-test-key", request_fn=lambda _messages: "ok")
++        service.reply("hello")
++        service.clear_history()
++        self.assertEqual(service.history(), [])
++        self.assertTrue(service.status()["ai_configured"])
++        self.assertEqual(service.reply("after reset"), "ok")
++        self.assertEqual(service.history()[0]["content"], "after reset")
++
++
++if __name__ == "__main__":
++    unittest.main()
+diff --git a/web/app.css b/web/app.css
+new file mode 100644
+index 0000000000000000000000000000000000000000..afc18770acb050fdd2ad3a8a2d7bd035314223bc
+--- /dev/null
++++ b/web/app.css
+@@ -0,0 +1 @@
++:root{color-scheme:dark;--bg:#080b16;--surface:#0e1323;--surface-2:#121a2d;--line:rgba(161,177,231,.14);--line-strong:rgba(161,177,231,.25);--text:#f1f3ff;--muted:#8d98b7;--muted-2:#64708e;--violet:#8d83ff;--cyan:#74e6f2;--green:#68e4b7;--danger:#ff8697;--mono:'DM Mono',monospace;--sans:'Manrope',system-ui,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-family:var(--sans);background:var(--bg);color:var(--text);font-synthesis:none;text-rendering:optimizeLegibility}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 12% 15%,rgba(61,76,163,.14),transparent 32rem),radial-gradient(ellipse at 88% 80%,rgba(102,56,160,.12),transparent 34rem),var(--bg);font-size:14px}button,input,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:not-allowed;opacity:.42}a{color:var(--cyan);text-decoration:none}a:hover{text-decoration:underline}.shell{min-height:100vh;max-width:1600px;margin:0 auto;padding:0 30px 26px}.topbar{height:82px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}.brand{display:flex;gap:12px;align-items:center;color:var(--text);text-decoration:none}.brand:hover{text-decoration:none}.brand-mark{display:flex;align-items:center;gap:3px;width:37px;height:37px;padding:7px;border:1px solid rgba(141,131,255,.45);border-radius:12px;background:linear-gradient(145deg,rgba(141,131,255,.18),rgba(116,230,242,.05));box-shadow:0 0 22px rgba(141,131,255,.09)}.brand-mark span{display:block;width:5px;border-radius:8px;background:linear-gradient(180deg,var(--cyan),var(--violet))}.brand-mark span:nth-child(1){height:12px}.brand-mark span:nth-child(2){height:21px}.brand-mark span:nth-child(3){height:15px}.brand-copy strong{font-size:12px;letter-spacing:.1em;font-weight:800}.brand-copy strong span{color:var(--cyan)}.brand-copy small{display:block;color:var(--muted-2);font:9px var(--mono);letter-spacing:.14em;margin-top:4px}.header-state{display:flex;align-items:center;gap:16px}.mode-pill,.connection-pill{display:inline-flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid rgba(104,228,183,.19);border-radius:7px;background:rgba(104,228,183,.05);font:9px var(--mono);letter-spacing:.08em;color:#a1efd2;white-space:nowrap}.pulse-dot,.status-dot{display:inline-block;width:6px;height:6px;flex:0 0 auto;border-radius:50%;background:var(--green);box-shadow:0 0 9px rgba(104,228,183,.65)}.icon-button{height:36px;width:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.025);color:var(--muted);font-size:22px;transition:background .2s,border-color .2s}.icon-button:hover{background:rgba(141,131,255,.1);border-color:var(--line-strong);color:var(--text)}.icon-button svg,.tool-button svg,.send-button svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}.layout{display:grid;grid-template-columns:minmax(275px,340px) minmax(0,1fr);gap:25px;padding-top:25px;min-height:calc(100vh - 108px)}.companion-panel,.conversation-panel{border:1px solid var(--line);border-radius:18px;background:linear-gradient(145deg,rgba(18,25,45,.92),rgba(10,14,27,.96));min-width:0;overflow:hidden}.companion-panel{padding:22px 23px;display:flex;flex-direction:column}.panel-overline,.eyebrow{font:10px var(--mono);letter-spacing:.15em;color:var(--muted);text-transform:uppercase}.panel-overline{display:flex;align-items:center;gap:8px}.tiny-square{width:6px;height:6px;background:var(--cyan);box-shadow:0 0 8px rgba(116,230,242,.5)}.avatar-stage{position:relative;display:flex;align-items:center;justify-content:center;min-height:292px;margin:14px -12px 2px;overflow:hidden;background:radial-gradient(ellipse at 50% 53%,rgba(102,100,209,.16),transparent 62%)}.avatar-stage:before,.avatar-stage:after{content:"";position:absolute;width:220px;height:220px;border:1px solid rgba(130,145,220,.12);border-radius:50%}.avatar-stage:after{width:175px;height:175px;border-style:dashed;border-color:rgba(116,230,242,.12);animation:orbit 36s linear infinite}.avatar-glow{position:absolute;width:148px;height:148px;top:74px;border-radius:50%;background:rgba(113,91,255,.17);filter:blur(48px)}.avatar{position:relative;width:232px;height:298px;z-index:2;filter:drop-shadow(0 18px 22px rgba(71,64,143,.12));animation:float 5s ease-in-out infinite}.orb-orbit{position:absolute;width:228px;height:98px;border:1px solid rgba(116,230,242,.17);border-radius:50%;z-index:3;transform:rotate(-21deg)}.orbit-two{width:205px;height:74px;border-color:rgba(141,131,255,.3);transform:rotate(22deg)}.avatar-label{position:absolute;z-index:5;bottom:2px;display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(8,11,22,.78);border:1px solid var(--line);border-radius:6px;font:9px var(--mono);letter-spacing:.15em;color:#bfc8eb}.avatar-pulse{width:5px;height:5px;border-radius:50%;background:var(--cyan);box-shadow:0 0 7px var(--cyan)}.identity-block{border-top:1px solid var(--line);padding-top:21px}.identity-block .eyebrow{font-size:9px;margin:0 0 7px;color:var(--muted-2)}h1,h2,h3,p{margin-top:0}.identity-block h1{font-size:31px;letter-spacing:-.06em;margin:0 0 7px;font-weight:700}.title-period{color:var(--cyan)}.muted-copy{font-size:12px;line-height:1.7;color:var(--muted);margin:0}.system-metrics{margin-top:23px;border-top:1px solid var(--line);padding-top:8px}.metric-row{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:35px;border-bottom:1px solid rgba(161,177,231,.08)}.metric-row>span:first-child{font:9px var(--mono);letter-spacing:.08em;color:var(--muted-2)}.metric-row strong{font:10px var(--mono);color:#c9d1ef;font-weight:400;text-align:right}.state-value{color:#d7caff!important}.safe-state{color:var(--green)!important;display:inline-flex;align-items:center;gap:6px}.safe-state .status-dot{width:5px;height:5px}.note-card{display:flex;gap:10px;align-items:flex-start;margin-top:18px;padding:12px;border:1px solid rgba(116,230,242,.12);border-radius:9px;background:rgba(116,230,242,.035)}.note-icon{display:grid;place-items:center;flex:0 0 16px;width:16px;height:16px;border:1px solid rgba(116,230,242,.45);border-radius:50%;font:10px var(--mono);color:var(--cyan)}.note-card p{font-size:10px;line-height:1.65;color:var(--muted);margin:0}.conversation-panel{display:flex;flex-direction:column;min-height:calc(100vh - 134px)}.conversation-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:24px 28px 20px;border-bottom:1px solid var(--line)}.conversation-heading .panel-overline{font-size:9px;letter-spacing:.11em}.heading-separator{color:var(--cyan);opacity:.7}.conversation-heading h2{font-size:24px;letter-spacing:-.045em;margin:7px 0 0}.conversation-actions{display:flex;align-items:center;gap:15px}.connection-pill{font-size:9px;letter-spacing:.02em;color:var(--muted);background:rgba(255,255,255,.025);border-color:var(--line);padding:8px 10px}.connection-pill .status-dot{background:var(--muted-2);box-shadow:none}.connection-pill.connected .status-dot{background:var(--green);box-shadow:0 0 7px rgba(104,228,183,.5)}.connection-pill.error .status-dot{background:var(--danger);box-shadow:none}.text-button{border:0;background:none;color:var(--muted);font-size:11px;padding:7px}.text-button:hover{color:var(--text)}.setup-banner{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;margin:18px 28px 0;border:1px solid rgba(255,185,107,.22);border-radius:10px;background:rgba(255,185,107,.055)}.setup-banner[hidden]{display:none}.setup-symbol{width:22px;height:22px;display:grid;place-items:center;flex-shrink:0;border:1px solid rgba(255,185,107,.4);border-radius:50%;font:12px var(--mono);color:#ffc98b}.setup-banner strong{font-size:12px;color:#ffdbb4}.setup-banner p{font-size:11px;line-height:1.65;color:var(--muted);margin:4px 0 0}.setup-banner code{font:10px var(--mono);color:#e4e8ff}.messages{position:relative;flex:1;min-height:250px;max-height:calc(100vh - 400px);overflow:auto;padding:28px clamp(18px,4vw,60px) 22px;scroll-behavior:smooth}.empty-state{max-width:440px;margin:9vh auto 6vh;text-align:center}.empty-icon{width:44px;height:44px;display:grid;place-items:center;margin:0 auto 18px;border:1px solid rgba(141,131,255,.23);border-radius:14px;background:rgba(141,131,255,.07)}.empty-icon svg{width:25px;height:25px;fill:none;stroke:var(--violet);stroke-width:1.3;stroke-linejoin:round}.empty-state h3{font-size:17px;font-weight:600;margin-bottom:8px;letter-spacing:-.03em}.empty-state p{font-size:12px;line-height:1.8;color:var(--muted);margin:0 auto 24px;max-width:330px}.prompt-chips{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}.prompt-chip{display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.025);border:1px solid var(--line);color:#c4cbe6;border-radius:8px;padding:10px 11px;font-size:10px;transition:all .2s}.prompt-chip:hover{border-color:rgba(141,131,255,.4);background:rgba(141,131,255,.07)}.prompt-chip span{color:var(--cyan)}.message-row{display:flex;gap:12px;margin:0 0 23px;align-items:flex-start}.message-row.user{justify-content:flex-end}.message-avatar{width:28px;height:28px;display:grid;place-items:center;flex:0 0 28px;border:1px solid rgba(116,230,242,.2);border-radius:9px;background:rgba(116,230,242,.06);font:9px var(--mono);color:var(--cyan)}.message-row.user .message-avatar{order:2;border-color:rgba(141,131,255,.28);background:rgba(141,131,255,.09);color:#c1b9ff}.message-body{max-width:min(80%,670px);min-width:0}.message-meta{display:flex;gap:9px;align-items:center;margin:0 0 7px;font:9px var(--mono);letter-spacing:.05em;color:var(--muted-2)}.message-row.user .message-meta{justify-content:flex-end}.message-bubble{font-size:13px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere;padding:12px 15px;border:1px solid var(--line);border-radius:4px 13px 13px 13px;background:rgba(20,27,47,.82);color:#e2e7fb}.message-row.user .message-bubble{border-color:rgba(141,131,255,.2);border-radius:13px 4px 13px 13px;background:linear-gradient(145deg,rgba(80,71,151,.22),rgba(30,35,66,.7));color:#f3f2ff}.pending-message{display:flex;align-items:center;gap:10px;padding:0 30px 14px;color:var(--muted);font-size:11px}.pending-message[hidden]{display:none}.typing-dots{display:flex;gap:4px}.typing-dots i{width:4px;height:4px;background:var(--cyan);border-radius:50%;animation:dots 1.1s infinite}.typing-dots i:nth-child(2){animation-delay:.15s}.typing-dots i:nth-child(3){animation-delay:.3s}.error-banner{margin:0 28px 12px;padding:10px 12px;border:1px solid rgba(255,134,151,.23);background:rgba(255,134,151,.06);border-radius:8px;color:#ffc1ca;font-size:11px;line-height:1.6}.error-banner[hidden]{display:none}.composer{margin:0 28px;padding:11px 13px 10px;border:1px solid var(--line-strong);border-radius:13px;background:rgba(5,8,17,.52);transition:border-color .2s,box-shadow .2s}.composer:focus-within{border-color:rgba(141,131,255,.5);box-shadow:0 0 0 3px rgba(141,131,255,.05)}.composer textarea{display:block;width:100%;max-height:150px;min-height:45px;resize:none;border:0;outline:none;background:transparent;color:var(--text);font-size:13px;line-height:1.6;padding:7px 5px}.composer textarea::placeholder{color:#5d6988}.composer-bottom{display:flex;justify-content:space-between;align-items:center;gap:8px;border-top:1px solid rgba(161,177,231,.08);padding-top:9px}.composer-tools,.send-group{display:flex;align-items:center;gap:7px}.tool-button{display:inline-flex;align-items:center;gap:6px;border:1px solid transparent;border-radius:7px;padding:6px 8px;background:transparent;color:var(--muted);font-size:10px;transition:all .2s}.tool-button svg{width:15px;height:15px}.tool-button:hover,.tool-button.active{border-color:rgba(116,230,242,.2);color:var(--cyan);background:rgba(116,230,242,.04)}.tool-button.active{color:var(--green)}.char-count{font:9px var(--mono);color:var(--muted-2);margin-right:8px}.send-button{display:flex;align-items:center;gap:10px;border:1px solid rgba(141,131,255,.4);border-radius:8px;padding:9px 13px;color:#f7f6ff;background:linear-gradient(115deg,#6559ca,#8a76e9);box-shadow:0 5px 22px rgba(91,75,191,.14);font-size:11px;transition:all .2s}.send-button:not(:disabled):hover{transform:translateY(-1px);box-shadow:0 7px 26px rgba(91,75,191,.24)}.send-button svg{width:15px;height:15px}.conversation-footer{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:14px 29px 18px;color:var(--muted-2);font:8px var(--mono);letter-spacing:.04em}.conversation-footer span:last-child{color:#6b87a1}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}.overlay{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:rgba(3,5,13,.82);backdrop-filter:blur(15px)}.overlay[hidden]{display:none}.access-card,.settings-card{width:min(100%,440px);padding:29px;border:1px solid var(--line-strong);border-radius:18px;background:linear-gradient(145deg,#131a30,#0b1020);box-shadow:0 30px 90px rgba(0,0,0,.4)}.access-logo{font-size:20px;font-weight:800;letter-spacing:.1em;margin-bottom:25px}.access-logo span{color:var(--cyan)}.access-card .eyebrow,.settings-card .eyebrow{font-size:9px;color:var(--cyan);margin-bottom:8px}.access-card h2,.settings-card h2{font-size:24px;letter-spacing:-.05em;margin-bottom:9px}.access-card label{display:block;margin:22px 0 8px;color:#c8d0eb;font-size:11px}.access-card input{width:100%;border:1px solid var(--line-strong);border-radius:8px;background:#080d1a;color:var(--text);padding:12px;outline:none}.access-card input:focus{border-color:var(--violet)}.access-error{color:#ffabb7;font-size:11px;margin:8px 0 0}.primary-button{width:100%;border:1px solid rgba(141,131,255,.4);border-radius:8px;padding:12px;color:white;background:linear-gradient(110deg,#6057c4,#8b77e9);font-weight:600;font-size:12px;margin-top:19px}.primary-button:hover{filter:brightness(1.08)}.settings-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:23px}.settings-header .icon-button{font-size:24px}.settings-item{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:15px 0;border-top:1px solid var(--line)}.settings-item strong{font-size:12px}.settings-item p{font-size:10px;line-height:1.65;color:var(--muted);margin:5px 0 0;max-width:285px}.settings-tag{font:9px var(--mono);color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:6px 7px;white-space:nowrap}.settings-tag.safe{color:var(--green);border-color:rgba(104,228,183,.2)}.switch{border:1px solid var(--line-strong);border-radius:20px;background:#11172a;width:39px;height:23px;padding:3px;flex-shrink:0}.switch span{display:block;width:15px;height:15px;border-radius:50%;background:#68728e;transition:transform .2s,background .2s}.switch[aria-checked=true]{background:rgba(104,228,183,.18);border-color:rgba(104,228,183,.35)}.switch[aria-checked=true] span{transform:translateX(15px);background:var(--green)}.toast{position:fixed;left:50%;bottom:26px;z-index:50;transform:translateX(-50%);max-width:calc(100% - 32px);border:1px solid var(--line-strong);border-radius:10px;background:#171e35;padding:12px 15px;font-size:11px;color:#edf0ff;box-shadow:0 12px 40px rgba(0,0,0,.3)}.toast[hidden]{display:none}.avatar-stage.thinking .avatar{filter:drop-shadow(0 18px 24px rgba(116,230,242,.18));animation:float 2s ease-in-out infinite}.avatar-stage.thinking .avatar-pulse{animation:blink .6s infinite alternate}@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}@keyframes orbit{to{transform:rotate(339deg)}}@keyframes dots{0%,60%,100%{opacity:.22;transform:translateY(0)}30%{opacity:1;transform:translateY(-3px)}}@keyframes blink{from{opacity:.35}to{opacity:1}}@media(min-width:1250px){.layout{grid-template-columns:330px minmax(0,1fr);gap:28px}.companion-panel{padding:24px 26px}.avatar-stage{min-height:320px}.avatar{width:250px;height:320px}.messages{max-height:calc(100vh - 410px)}}@media(max-width:900px){.shell{padding:0 16px 16px}.layout{grid-template-columns:250px minmax(0,1fr);gap:14px}.companion-panel{padding:18px 15px}.avatar-stage{min-height:245px}.avatar{width:198px;height:260px}.conversation-heading{padding:21px 18px 17px}.conversation-heading h2{font-size:22px}.conversation-actions{gap:7px}.messages{padding-left:18px;padding-right:18px}.composer{margin-left:18px;margin-right:18px}.conversation-footer{padding-left:18px;padding-right:18px}.mode-pill{font-size:8px}.brand-copy strong{font-size:10px}.brand-copy small{font-size:8px}}@media(max-width:660px){.shell{padding:0 10px 10px}.topbar{height:66px}.brand-mark{width:32px;height:32px;border-radius:9px}.brand-copy strong{font-size:10px;letter-spacing:.05em}.brand-copy small{font-size:7px;letter-spacing:.1em}.header-state{gap:7px}.mode-pill{padding:7px 8px;font-size:7px;letter-spacing:.03em}.icon-button{width:32px;height:32px}.layout{display:flex;flex-direction:column;gap:12px;padding-top:12px;min-height:0}.companion-panel{display:grid;grid-template-columns:1fr 116px;grid-template-areas:'overline avatar' 'identity avatar' 'metrics metrics' 'note note';gap:0;padding:15px 14px 12px}.companion-panel>.panel-overline{grid-area:overline;align-self:end;padding-bottom:10px;font-size:8px}.avatar-stage{grid-area:avatar;min-height:150px;margin:0;align-self:center;overflow:visible}.avatar-stage:before{width:112px;height:112px}.avatar-stage:after{width:88px;height:88px}.avatar-glow{width:70px;height:70px;top:35px;filter:blur(28px)}.avatar{width:115px;height:150px}.orb-orbit{width:125px;height:48px}.orbit-two{width:110px;height:38px}.avatar-label{bottom:-1px;padding:4px 6px;font-size:7px}.identity-block{grid-area:identity;border:0;padding:0 3px 13px}.identity-block .eyebrow{font-size:7px;margin-bottom:4px}.identity-block h1{font-size:23px;margin-bottom:2px}.identity-block .muted-copy{font-size:9px;max-width:190px}.system-metrics{grid-area:metrics;margin-top:0;padding-top:5px;display:grid;grid-template-columns:1fr 1fr;column-gap:15px}.metric-row{min-height:29px}.metric-row:nth-child(2){border-bottom:1px solid rgba(161,177,231,.08)}.metric-row>span:first-child{font-size:7px;letter-spacing:.035em}.metric-row strong{font-size:8px}.note-card{grid-area:note;margin-top:10px;padding:8px}.note-card p{font-size:8px}.note-icon{width:13px;height:13px;flex-basis:13px;font-size:8px}.conversation-panel{min-height:calc(100dvh - 285px);border-radius:14px}.conversation-heading{padding:16px 13px 14px;gap:6px}.conversation-heading .panel-overline{font-size:7px;letter-spacing:.04em}.conversation-heading h2{font-size:20px;margin-top:5px}.conversation-actions{gap:4px;flex-wrap:wrap;justify-content:flex-end}.connection-pill{font-size:8px;padding:6px 7px;gap:5px}.text-button{font-size:9px;padding:5px 3px}.messages{min-height:180px;max-height:none;flex:1;padding:18px 12px}.empty-state{margin:7vh auto 5vh}.empty-state h3{font-size:15px}.empty-state p{font-size:10px}.prompt-chips{gap:6px}.prompt-chip{font-size:9px;padding:9px}.message-body{max-width:88%}.message-bubble{font-size:12px;padding:10px 12px}.message-meta{font-size:8px}.setup-banner{margin:12px 12px 0;padding:10px;gap:8px}.setup-banner strong{font-size:11px}.setup-banner p{font-size:10px}.composer{margin:0 9px;padding:7px 8px 8px;border-radius:10px}.composer textarea{font-size:12px;min-height:39px;padding:5px}.composer-bottom{padding-top:7px}.tool-button{padding:6px 5px;gap:4px;font-size:8px}.tool-button svg{width:13px;height:13px}.send-button{padding:8px 10px;gap:5px;font-size:10px}.send-button svg{width:13px;height:13px}.char-count{display:none}.conversation-footer{font-size:7px;padding:10px 12px;gap:6px}.pending-message{padding:0 14px 10px;font-size:10px}.error-banner{margin:0 11px 8px;font-size:10px}.access-card,.settings-card{padding:23px 20px}.access-card h2,.settings-card h2{font-size:21px}}@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
+diff --git a/web/app.js b/web/app.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..572935c1fb8f117a56d7b2ade56af6f15292b0f3
+--- /dev/null
++++ b/web/app.js
+@@ -0,0 +1,318 @@
++(() => {
++  'use strict';
++  const $ = (selector) => document.querySelector(selector);
++  const state = {
++    status: null,
++    busy: false,
++    voiceOutput: localStorage.getItem('robotVoiceOutput') === 'true',
++    accessToken: localStorage.getItem('robotAccessToken') || '',
++    recognition: null,
++  };
++
++  const el = {
++    provider: $('#providerState'), model: $('#modelState'), memory: $('#memoryState'),
++    connectionPill: $('#connectionPill'), connectionLabel: $('#connectionLabel'),
++    setupBanner: $('#setupBanner'), messages: $('#messages'), empty: $('#emptyState'),
++    composer: $('#composer'), input: $('#messageInput'), send: $('#sendButton'), count: $('#charCount'),
++    pending: $('#pendingMessage'), errors: $('#errorBanner'), avatar: $('#avatarStage'), mood: $('#avatarMood'),
++    accessOverlay: $('#accessOverlay'), accessForm: $('#accessForm'), accessInput: $('#accessInput'), accessError: $('#accessError'),
++    settingsOverlay: $('#settingsOverlay'), toast: $('#toast'), voiceOutput: $('#voiceOutputButton'), settingsVoice: $('#settingsVoiceToggle'),
++  };
++
++  function setConnection(label, type = '') {
++    el.connectionLabel.textContent = label;
++    el.connectionPill.classList.toggle('connected', type === 'connected');
++    el.connectionPill.classList.toggle('error', type === 'error');
++  }
++
++  function showError(message) {
++    el.errors.textContent = message;
++    el.errors.hidden = false;
++  }
++  function clearError() { el.errors.hidden = true; el.errors.textContent = ''; }
++
++  async function api(path, options = {}) {
++    const headers = new Headers(options.headers || {});
++    headers.set('Accept', 'application/json');
++    if (options.body) headers.set('Content-Type', 'application/json');
++    if (state.accessToken) headers.set('Authorization', `Bearer ${state.accessToken}`);
++    const response = await fetch(path, { ...options, headers, cache: 'no-store' });
++    let data;
++    try { data = await response.json(); } catch { data = {}; }
++    if (response.status === 401) {
++      el.accessOverlay.hidden = false;
++      el.accessError.textContent = 'That key was not accepted. Check the server configuration and try again.';
++      el.accessError.hidden = false;
++      throw new Error('Access key required.');
++    }
++    if (!response.ok) throw new Error(data.error || `Request failed (${response.status}).`);
++    return data;
++  }
++
++  function syncVoiceButtons() {
++    el.voiceOutput.classList.toggle('active', state.voiceOutput);
++    el.voiceOutput.setAttribute('aria-pressed', String(state.voiceOutput));
++    el.voiceOutput.querySelector('span').textContent = state.voiceOutput ? 'Voice on' : 'Voice off';
++    el.settingsVoice.setAttribute('aria-checked', String(state.voiceOutput));
++    if (!el.settingsVoice.querySelector('span')) el.settingsVoice.append(document.createElement('span'));
++  }
++
++  function updateComposer() {
++    const length = el.input.value.length;
++    el.count.textContent = `${length} / 4000`;
++    const canSend = Boolean(state.status && state.status.ai_configured && !state.busy && el.input.value.trim());
++    el.send.disabled = !canSend;
++    el.input.disabled = Boolean(state.busy);
++  }
++
++  function renderHistory(messages) {
++    el.messages.querySelectorAll('.message-row').forEach((node) => node.remove());
++    const realMessages = Array.isArray(messages) ? messages.filter((m) => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string') : [];
++    el.empty.hidden = realMessages.length > 0;
++    realMessages.forEach((message) => appendMessage(message.role, message.content, false));
++    scrollMessages();
++    el.memory.textContent = `${realMessages.length} MSG${realMessages.length === 1 ? '' : 'S'}`;
++  }
++
++  function appendMessage(role, text, shouldSpeak = false) {
++    el.empty.hidden = true;
++    const row = document.createElement('article');
++    row.className = `message-row ${role}`;
++    const avatar = document.createElement('div');
++    avatar.className = 'message-avatar';
++    avatar.textContent = role === 'user' ? 'YOU' : 'AI';
++    const body = document.createElement('div');
++    body.className = 'message-body';
++    const meta = document.createElement('div');
++    meta.className = 'message-meta';
++    const who = document.createElement('span');
++    who.textContent = role === 'user' ? 'YOU' : 'VIRTUAL AI';
++    const when = document.createElement('span');
++    when.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
++    meta.append(who, when);
++    const bubble = document.createElement('div');
++    bubble.className = 'message-bubble';
++    bubble.textContent = text;
++    body.append(meta, bubble);
++    row.append(avatar, body);
++    el.messages.append(row);
++    scrollMessages();
++    if (shouldSpeak && state.voiceOutput) speak(text);
++  }
++
++  function scrollMessages() { el.messages.scrollTop = el.messages.scrollHeight; }
++
++  function speak(text) {
++    if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
++      showToast('Spoken replies are not supported in this browser.');
++      return;
++    }
++    window.speechSynthesis.cancel();
++    const utterance = new SpeechSynthesisUtterance(text);
++    utterance.rate = 1;
++    utterance.pitch = 1;
++    window.speechSynthesis.speak(utterance);
++  }
++
++  function showToast(message) {
++    el.toast.textContent = message;
++    el.toast.hidden = false;
++    window.clearTimeout(showToast.timer);
++    showToast.timer = window.setTimeout(() => { el.toast.hidden = true; }, 3000);
++  }
++
++  async function loadStatus() {
++    setConnection('Connecting');
++    try {
++      state.status = await api('/api/status');
++      clearError();
++      const configured = Boolean(state.status.ai_configured);
++      el.provider.textContent = configured ? 'Configured' : 'Not connected';
++      el.provider.style.color = configured ? 'var(--green)' : 'var(--danger)';
++      el.model.textContent = state.status.model || '—';
++      el.setupBanner.hidden = configured;
++      setConnection(configured ? 'Provider configured' : 'AI setup required', configured ? 'connected' : 'error');
++      if (state.status.requires_access_token) {
++        try { await api('/api/history'); }
++        catch (error) { if (/Access key required/.test(error.message)) el.accessOverlay.hidden = false; }
++      }
++      if (!state.status.requires_access_token || state.accessToken) {
++        try { const data = await api('/api/history'); renderHistory(data.messages); }
++        catch (error) { if (!/Access key required/.test(error.message)) throw error; }
++      }
++      if (!configured) el.mood.textContent = 'AWAITING AI LINK';
++      else el.mood.textContent = 'PROVIDER READY';
++      updateComposer();
++    } catch (error) {
++      setConnection('Server unavailable', 'error');
++      el.provider.textContent = 'Offline';
++      el.model.textContent = '—';
++      el.mood.textContent = 'LINK OFFLINE';
++      showError(`Cannot connect to the virtual AI server: ${error.message} Ensure the Python server is running and reopen this page.`);
++    }
++  }
++
++  async function submitMessage(text) {
++    if (state.busy || !text.trim()) return;
++    if (!state.status || !state.status.ai_configured) {
++      showError('No real AI provider is configured. Set OPENAI_API_KEY on the server; this app will not invent a response.');
++      return;
++    }
++    clearError();
++    state.busy = true;
++    let succeeded = false;
++    el.pending.hidden = false;
++    el.avatar.classList.add('thinking');
++    el.mood.textContent = 'THINKING';
++    updateComposer();
++    try {
++      const result = await api('/api/chat', { method: 'POST', body: JSON.stringify({ message: text.trim() }) });
++      renderHistory(result.messages);
++      succeeded = true;
++      if (!Array.isArray(result.messages)) appendMessage('assistant', result.reply, true);
++      else if (state.voiceOutput && result.reply) speak(result.reply);
++      el.mood.textContent = 'READY';
++      setConnection('Session active', 'connected');
++    } catch (error) {
++      showError(error.message);
++      el.mood.textContent = state.status && state.status.ai_configured ? 'RETRY REQUIRED' : 'AWAITING AI LINK';
++    } finally {
++      state.busy = false;
++      el.pending.hidden = true;
++      el.avatar.classList.remove('thinking');
++      if (succeeded) el.input.value = '';
++      autoResizeInput();
++      updateComposer();
++      el.input.focus();
++    }
++  }
++
++  function autoResizeInput() {
++    el.input.style.height = 'auto';
++    el.input.style.height = `${Math.min(el.input.scrollHeight, 150)}px`;
++    updateComposer();
++  }
++
++  el.composer.addEventListener('submit', (event) => {
++    event.preventDefault();
++    submitMessage(el.input.value);
++  });
++  el.input.addEventListener('input', autoResizeInput);
++  el.input.addEventListener('keydown', (event) => {
++    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
++      event.preventDefault();
++      if (!el.send.disabled) el.composer.requestSubmit();
++    }
++  });
++  document.querySelectorAll('[data-prompt]').forEach((button) => button.addEventListener('click', () => {
++    el.input.value = button.getAttribute('data-prompt') || '';
++    autoResizeInput();
++    el.input.focus();
++  }));
++
++  $('#clearButton').addEventListener('click', async () => {
++    if (!window.confirm('Clear the shared conversation for every connected device?')) return;
++    try {
++      await api('/api/reset', { method: 'POST', body: '{}' });
++      renderHistory([]);
++      clearError();
++      showToast('Shared conversation cleared.');
++    } catch (error) { showError(error.message); }
++  });
++
++  function toggleVoiceOutput() {
++    state.voiceOutput = !state.voiceOutput;
++    localStorage.setItem('robotVoiceOutput', String(state.voiceOutput));
++    if (!state.voiceOutput && 'speechSynthesis' in window) window.speechSynthesis.cancel();
++    syncVoiceButtons();
++    showToast(state.voiceOutput ? 'Spoken replies enabled on this device.' : 'Spoken replies disabled on this device.');
++  }
++  el.voiceOutput.addEventListener('click', toggleVoiceOutput);
++  el.settingsVoice.addEventListener('click', toggleVoiceOutput);
++
++  $('#settingsButton').addEventListener('click', () => { el.settingsOverlay.hidden = false; });
++  $('#closeSettings').addEventListener('click', () => { el.settingsOverlay.hidden = true; });
++  $('#settingsDone').addEventListener('click', () => { el.settingsOverlay.hidden = true; });
++  el.settingsOverlay.addEventListener('click', (event) => { if (event.target === el.settingsOverlay) el.settingsOverlay.hidden = true; });
++
++  el.accessForm.addEventListener('submit', async (event) => {
++    event.preventDefault();
++    const token = el.accessInput.value.trim();
++    if (!token) return;
++    state.accessToken = token;
++    localStorage.setItem('robotAccessToken', token);
++    el.accessError.hidden = true;
++    try {
++      const data = await api('/api/history');
++      renderHistory(data.messages);
++      el.accessOverlay.hidden = true;
++      el.accessInput.value = '';
++      showToast('Connected to the shared AI session.');
++    } catch (error) {
++      if (/Access key required/.test(error.message)) {
++        localStorage.removeItem('robotAccessToken');
++        state.accessToken = '';
++      }
++      el.accessError.textContent = error.message;
++      el.accessError.hidden = false;
++    }
++  });
++
++  $('#micButton').addEventListener('click', () => {
++    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
++    if (!SpeechRecognition) {
++      showToast('Voice input is not supported by this browser. You can still type messages.');
++      return;
++    }
++    if (state.recognition) {
++      state.recognition.stop();
++      state.recognition = null;
++      $('#micButton').classList.remove('active');
++      return;
++    }
++    const recognition = new SpeechRecognition();
++    recognition.lang = navigator.language || 'en-US';
++    recognition.interimResults = true;
++    recognition.maxAlternatives = 1;
++    const startingText = el.input.value;
++    recognition.onstart = () => { $('#micButton').classList.add('active'); showToast('Listening on this device…'); };
++    recognition.onresult = (event) => {
++      let interim = '';
++      let finalText = '';
++      for (let i = event.resultIndex; i < event.results.length; i += 1) {
++        const transcript = event.results[i][0].transcript;
++        if (event.results[i].isFinal) finalText += transcript;
++        else interim += transcript;
++      }
++      el.input.value = `${startingText}${startingText && finalText ? ' ' : ''}${finalText || interim}`;
++      autoResizeInput();
++    };
++    recognition.onerror = (event) => showToast(`Microphone error: ${event.error}. Check browser permission.`);
++    recognition.onend = () => { state.recognition = null; $('#micButton').classList.remove('active'); el.input.focus(); };
++    state.recognition = recognition;
++    try { recognition.start(); } catch { state.recognition = null; showToast('Could not start microphone. Check permissions.'); }
++  });
++
++  syncVoiceButtons();
++  updateComposer();
++  loadStatus();
++  // Poll the shared history so a message sent from another device appears here.
++  window.setInterval(async () => {
++    if (document.hidden || state.busy || el.accessOverlay.hidden === false) return;
++    try {
++      const data = await api('/api/history');
++      const displayed = Array.from(el.messages.querySelectorAll('.message-row')).map((row) => ({
++        role: row.classList.contains('user') ? 'user' : 'assistant',
++        content: row.querySelector('.message-bubble')?.textContent || '',
++      }));
++      const incoming = Array.isArray(data.messages) ? data.messages : [];
++      if (JSON.stringify(displayed) !== JSON.stringify(incoming)) renderHistory(incoming);
++      if (state.status && incoming.length !== state.status.conversation_messages) {
++        state.status.conversation_messages = incoming.length;
++        el.memory.textContent = `${incoming.length} MSG${incoming.length === 1 ? '' : 'S'}`;
++      }
++    } catch (error) {
++      if (!/Access key required/.test(error.message)) setConnection('Sync interrupted', 'error');
++    }
++  }, 4000);
++})();
+diff --git a/web/index.html b/web/index.html
+new file mode 100644
+index 0000000000000000000000000000000000000000..ed5f7ee0de7e71c12efc08d789c0e2ed69fb930c
+--- /dev/null
++++ b/web/index.html
+@@ -0,0 +1,136 @@
++<!doctype html>
++<html lang="en">
++<head>
++  <meta charset="utf-8">
++  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
++  <meta name="theme-color" content="#080b16">
++  <meta name="description" content="The browser-based virtual AI interface for the human_ai_robot simulation project.">
++  <title>HUMAN AI ROBOT — Virtual Companion</title>
++  <link rel="stylesheet" href="/app.css">
++  <script src="/app.js" defer></script>
++</head>
++<body>
++  <div class="shell">
++    <header class="topbar">
++      <a class="brand" href="/" aria-label="Human AI Robot home">
++        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
++        <span class="brand-copy"><strong>HUMAN<span>_</span>AI ROBOT</strong><small>VIRTUAL COMPANION SYSTEM</small></span>
++      </a>
++      <div class="header-state">
++        <span class="mode-pill"><span class="pulse-dot"></span> SIMULATION ONLY</span>
++        <button id="settingsButton" class="icon-button" type="button" title="Connection and voice settings" aria-label="Connection and voice settings">
++          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.1.9-1.5 2.6-1.4-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.5h-3l-.3-1.5a7.8 7.8 0 0 1-1.5-.9l-1.4.5-1.5-2.6 1.2-1a7.7 7.7 0 0 1 0-1.8l-1.2-1 1.5-2.6 1.4.5a7.8 7.8 0 0 1 1.5-.9l.3-1.5h3l.2 1.5a7.8 7.8 0 0 1 1.5.9l1.4-.5 1.5 2.6-1.1 1a7.7 7.7 0 0 1 0 1.8Z"/></svg>
++        </button>
++      </div>
++    </header>
++
++    <main class="layout">
++      <aside class="companion-panel" aria-label="Virtual companion status">
++        <div class="panel-overline"><span class="tiny-square"></span> EMBODIMENT LINK</div>
++        <div class="avatar-stage" id="avatarStage">
++          <div class="orb-orbit orbit-one"></div>
++          <div class="orb-orbit orbit-two"></div>
++          <div class="avatar-glow"></div>
++          <svg class="avatar" viewBox="0 0 280 360" role="img" aria-label="Stylised virtual AI avatar illustration">
++            <defs>
++              <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a7a9ff"/><stop offset=".48" stop-color="#6d64bd"/><stop offset="1" stop-color="#29254f"/></linearGradient>
++              <linearGradient id="skin" x1="0" y1="0" x2=".92" y2="1"><stop offset="0" stop-color="#ffe0d4"/><stop offset=".55" stop-color="#d7a5a5"/><stop offset="1" stop-color="#9c7189"/></linearGradient>
++              <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e4e6ff"/><stop offset=".5" stop-color="#9ca2dc"/><stop offset="1" stop-color="#454a82"/></linearGradient>
++              <linearGradient id="visor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#222845"/><stop offset="1" stop-color="#0c1327"/></linearGradient>
++            </defs>
++            <ellipse cx="140" cy="334" rx="75" ry="10" fill="#6573e4" opacity=".17"/>
++            <path d="M62 310 Q65 263 95 239 L114 223 H166 L185 239 Q215 263 218 310 L222 330 H58Z" fill="url(#body)" stroke="#b4bcff" stroke-opacity=".75" stroke-width="1.5"/>
++            <path d="M114 221 L114 190 H166 V221 Q158 244 140 247 Q122 244 114 221Z" fill="url(#skin)"/>
++            <path d="M76 150 Q66 81 108 50 Q144 24 180 51 Q219 82 204 160 L194 222 Q175 243 140 244 Q105 243 86 221Z" fill="url(#hair)"/>
++            <path d="M97 107 Q95 70 120 60 Q145 48 167 60 Q191 73 190 111 L187 168 Q183 199 164 216 Q151 228 140 228 Q126 228 113 216 Q95 199 92 168Z" fill="url(#skin)"/>
++            <path d="M89 120 Q73 95 94 63 Q112 37 145 42 Q185 43 197 78 Q201 96 190 119 L177 95 Q153 91 140 70 Q124 92 101 99Z" fill="url(#hair)"/>
++            <path d="M93 127 Q110 113 130 125" stroke="#3b355f" stroke-width="5" stroke-linecap="round" fill="none"/>
++            <path d="M151 125 Q171 112 187 127" stroke="#3b355f" stroke-width="5" stroke-linecap="round" fill="none"/>
++            <path d="M100 137 Q115 125 130 137 Q116 150 100 137Z" fill="url(#visor)" stroke="#6de5f7" stroke-opacity=".8" stroke-width="1.2"/>
++            <path d="M151 137 Q167 125 182 137 Q166 150 151 137Z" fill="url(#visor)" stroke="#6de5f7" stroke-opacity=".8" stroke-width="1.2"/>
++            <ellipse cx="115" cy="137" rx="4.5" ry="5.5" fill="#77edff"/><ellipse cx="167" cy="137" rx="4.5" ry="5.5" fill="#77edff"/>
++            <path d="M140 140 L133 166 Q140 172 147 166" stroke="#a36f82" stroke-width="2" fill="none" stroke-linecap="round"/>
++            <path d="M124 185 Q140 194 156 185" stroke="#914d75" stroke-width="2.5" fill="none" stroke-linecap="round"/>
++            <path d="M108 205 Q140 220 172 205" stroke="#ffc2cd" stroke-width="1.5" fill="none" opacity=".8"/>
++            <path d="M74 148 Q61 112 78 81 Q72 125 88 151 L90 202 Q77 180 74 148Z" fill="url(#hair)"/>
++            <path d="M204 148 Q218 112 201 81 Q207 125 192 151 L190 202 Q203 180 204 148Z" fill="url(#hair)"/>
++            <path d="M84 269 Q111 252 140 260 Q169 252 196 269 L209 310 H71Z" fill="#181d38" opacity=".76"/>
++            <path d="M106 248 L140 286 L174 248" fill="none" stroke="#c5c8ff" stroke-width="2.5"/>
++            <path d="M140 285 V326" stroke="#7af0ff" stroke-width="2" opacity=".85"/>
++            <circle cx="140" cy="290" r="5" fill="#7af0ff"/>
++            <path d="M60 316 H220" stroke="#98a6ff" stroke-width="1" opacity=".4"/>
++          </svg>
++          <div class="avatar-label"><span class="avatar-pulse"></span><span id="avatarMood">STANDBY</span></div>
++        </div>
++        <div class="identity-block">
++          <p class="eyebrow">YOUR DIGITAL COMPANION</p>
++          <h1>Virtual AI<span class="title-period">.</span></h1>
++          <p class="muted-copy">The software intelligence layer for your humanoid robotics project.</p>
++        </div>
++        <div class="system-metrics">
++          <div class="metric-row"><span>AI PROVIDER</span><strong id="providerState" class="state-value">Checking…</strong></div>
++          <div class="metric-row"><span>MODEL</span><strong id="modelState">—</strong></div>
++          <div class="metric-row"><span>PHYSICAL MOTION</span><strong class="safe-state"><span class="status-dot"></span> DISABLED</strong></div>
++          <div class="metric-row"><span>SHARED MEMORY</span><strong id="memoryState">Connecting…</strong></div>
++        </div>
++        <div class="note-card"><span class="note-icon" aria-hidden="true">i</span><p>This is a software simulation. The illustration is an interface avatar, not a live camera feed or a physical robot.</p></div>
++      </aside>
++
++      <section class="conversation-panel" aria-label="AI conversation">
++        <div class="conversation-heading">
++          <div><div class="panel-overline">PRIVATE SESSION <span class="heading-separator">/</span> SHARED ACROSS DEVICES</div><h2>Conversation</h2></div>
++          <div class="conversation-actions"><span id="connectionPill" class="connection-pill"><span class="status-dot"></span><span id="connectionLabel">Connecting</span></span><button id="clearButton" class="text-button" type="button" title="Clear the shared conversation">Clear chat</button></div>
++        </div>
++
++        <div id="setupBanner" class="setup-banner" hidden>
++          <div class="setup-symbol" aria-hidden="true">!</div>
++          <div><strong>Real AI is not connected yet</strong><p>This app will not invent replies. Configure <code>OPENAI_API_KEY</code> on the server and restart it. See <a href="https://github.com/ravaunrichards/human_ai_robot/blob/main/docs/virtual_ai_web.md" id="setupDocsLink">the setup guide</a> in the repository if available.</p></div>
++        </div>
++
++        <div id="messages" class="messages" aria-live="polite" aria-label="Conversation messages">
++          <div id="emptyState" class="empty-state">
++            <div class="empty-icon" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4 23.8 16.2 36 20l-12.2 3.8L20 36l-3.8-12.2L4 20l12.2-3.8Z"/><path d="m31 4 1.5 4.5L37 10l-4.5 1.5L31 16l-1.5-4.5L25 10l4.5-1.5Z"/></svg></div>
++            <h3>Your conversation starts here</h3>
++            <p>Messages sent from your phone or computer join the same server-side conversation.</p>
++            <div class="prompt-chips"><button type="button" class="prompt-chip" data-prompt="Help me plan the next phase of my humanoid robot software.">Plan my next phase <span>↗</span></button><button type="button" class="prompt-chip" data-prompt="Explain the current software architecture in my human_ai_robot project.">Review my architecture <span>↗</span></button></div>
++          </div>
++        </div>
++
++        <div id="pendingMessage" class="pending-message" hidden><span class="typing-dots"><i></i><i></i><i></i></span><span>Waiting for the AI provider…</span></div>
++        <div id="errorBanner" class="error-banner" role="alert" hidden></div>
++
++        <form id="composer" class="composer">
++          <label class="sr-only" for="messageInput">Message the virtual AI</label>
++          <textarea id="messageInput" rows="1" maxlength="4000" placeholder="Message your virtual AI…" autocomplete="off" required></textarea>
++          <div class="composer-bottom"><div class="composer-tools"><button id="micButton" class="tool-button" type="button" aria-label="Dictate a message" title="Dictate a message"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8"/></svg><span>Voice input</span></button><button id="voiceOutputButton" class="tool-button" type="button" aria-pressed="false" title="Read AI replies aloud"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M17 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg><span>Voice off</span></button></div><div class="send-group"><span id="charCount" class="char-count">0 / 4000</span><button id="sendButton" class="send-button" type="submit" disabled><span>Send</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div></div>
++        </form>
++        <footer class="conversation-footer"><span>AI-generated responses require an active provider and may be wrong.</span><span>SIMULATION ONLY · NO REAL MOTOR OUTPUT</span></footer>
++      </section>
++    </main>
++  </div>
++
++  <div id="accessOverlay" class="overlay" hidden>
++    <form id="accessForm" class="access-card">
++      <div class="access-logo" aria-hidden="true">H<span>_</span>AI</div>
++      <p class="eyebrow">PROTECTED REMOTE SESSION</p>
++      <h2>Enter your access key</h2>
++      <p class="muted-copy">Use the same server access key on your phone and computer to reach the same shared AI session.</p>
++      <label for="accessInput">Server access key</label>
++      <input id="accessInput" type="password" autocomplete="current-password" required placeholder="Enter ROBOT_ACCESS_TOKEN">
++      <p id="accessError" class="access-error" hidden></p>
++      <button class="primary-button" type="submit">Connect securely</button>
++    </form>
++  </div>
++
++  <div id="settingsOverlay" class="overlay" hidden>
++    <section class="settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
++      <div class="settings-header"><div><p class="eyebrow">PREFERENCES</p><h2 id="settingsTitle">Connection & voice</h2></div><button id="closeSettings" class="icon-button" type="button" aria-label="Close settings">×</button></div>
++      <div class="settings-item"><div><strong>Read AI replies aloud</strong><p>Uses your device's built-in speech synthesis.</p></div><button id="settingsVoiceToggle" class="switch" type="button" role="switch" aria-checked="false" aria-label="Toggle spoken replies"><span></span></button></div>
++      <div class="settings-item"><div><strong>Shared conversation</strong><p>Messages are held in memory by the server and shared across connected devices while it runs.</p></div><span class="settings-tag">ONE SESSION</span></div>
++      <div class="settings-item"><div><strong>Physical movement</strong><p>Real motor control remains disabled in this virtual interface.</p></div><span class="settings-tag safe">LOCKED</span></div>
++      <button id="settingsDone" class="primary-button" type="button">Done</button>
++    </section>
++  </div>
++  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
++</body>
++</html>

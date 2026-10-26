@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#080b16">
+  <meta name="description" content="The browser-based virtual AI interface for the human_ai_robot simulation project.">
+  <title>HUMAN AI ROBOT — Virtual Companion</title>
+  <link rel="stylesheet" href="/app.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Human AI Robot home">
+        <span class="brand-mark" aria-hidden="true"><span></span><span></span><span></span></span>
+        <span class="brand-copy"><strong>HUMAN<span>_</span>AI ROBOT</strong><small>VIRTUAL COMPANION SYSTEM</small></span>
+      </a>
+      <div class="header-state">
+        <span class="mode-pill"><span class="pulse-dot"></span> SIMULATION ONLY</span>
+        <button id="settingsButton" class="icon-button" type="button" title="Connection and voice settings" aria-label="Connection and voice settings">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Z"/><path d="m19.4 15 .1.1 1.1.9-1.5 2.6-1.4-.5a7.8 7.8 0 0 1-1.5.9l-.2 1.5h-3l-.3-1.5a7.8 7.8 0 0 1-1.5-.9l-1.4.5-1.5-2.6 1.2-1a7.7 7.7 0 0 1 0-1.8l-1.2-1 1.5-2.6 1.4.5a7.8 7.8 0 0 1 1.5-.9l.3-1.5h3l.2 1.5a7.8 7.8 0 0 1 1.5.9l1.4-.5 1.5 2.6-1.1 1a7.7 7.7 0 0 1 0 1.8Z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="companion-panel" aria-label="Virtual companion status">
+        <div class="panel-overline"><span class="tiny-square"></span> EMBODIMENT LINK</div>
+        <div class="avatar-stage" id="avatarStage">
+          <div class="orb-orbit orbit-one"></div>
+          <div class="orb-orbit orbit-two"></div>
+          <div class="avatar-glow"></div>
+          <svg class="avatar" viewBox="0 0 280 360" role="img" aria-label="Stylised virtual AI avatar illustration">
+            <defs>
+              <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a7a9ff"/><stop offset=".48" stop-color="#6d64bd"/><stop offset="1" stop-color="#29254f"/></linearGradient>
+              <linearGradient id="skin" x1="0" y1="0" x2=".92" y2="1"><stop offset="0" stop-color="#ffe0d4"/><stop offset=".55" stop-color="#d7a5a5"/><stop offset="1" stop-color="#9c7189"/></linearGradient>
+              <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e4e6ff"/><stop offset=".5" stop-color="#9ca2dc"/><stop offset="1" stop-color="#454a82"/></linearGradient>
+              <linearGradient id="visor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#222845"/><stop offset="1" stop-color="#0c1327"/></linearGradient>
+            </defs>
+            <ellipse cx="140" cy="334" rx="75" ry="10" fill="#6573e4" opacity=".17"/>
+            <path d="M62 310 Q65 263 95 239 L114 223 H166 L185 239 Q215 263 218 310 L222 330 H58Z" fill="url(#body)" stroke="#b4bcff" stroke-opacity=".75" stroke-width="1.5"/>
+            <path d="M114 221 L114 190 H166 V221 Q158 244 140 247 Q122 244 114 221Z" fill="url(#skin)"/>
+            <path d="M76 150 Q66 81 108 50 Q144 24 180 51 Q219 82 204 160 L194 222 Q175 243 140 244 Q105 243 86 221Z" fill="url(#hair)"/>
+            <path d="M97 107 Q95 70 120 60 Q145 48 167 60 Q191 73 190 111 L187 168 Q183 199 164 216 Q151 228 140 228 Q126 228 113 216 Q95 199 92 168Z" fill="url(#skin)"/>
+            <path d="M89 120 Q73 95 94 63 Q112 37 145 42 Q185 43 197 78 Q201 96 190 119 L177 95 Q153 91 140 70 Q124 92 101 99Z" fill="url(#hair)"/>
+            <path d="M93 127 Q110 113 130 125" stroke="#3b355f" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <path d="M151 125 Q171 112 187 127" stroke="#3b355f" stroke-width="5" stroke-linecap="round" fill="none"/>
+            <path d="M100 137 Q115 125 130 137 Q116 150 100 137Z" fill="url(#visor)" stroke="#6de5f7" stroke-opacity=".8" stroke-width="1.2"/>
+            <path d="M151 137 Q167 125 182 137 Q166 150 151 137Z" fill="url(#visor)" stroke="#6de5f7" stroke-opacity=".8" stroke-width="1.2"/>
+            <ellipse cx="115" cy="137" rx="4.5" ry="5.5" fill="#77edff"/><ellipse cx="167" cy="137" rx="4.5" ry="5.5" fill="#77edff"/>
+            <path d="M140 140 L133 166 Q140 172 147 166" stroke="#a36f82" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <path d="M124 185 Q140 194 156 185" stroke="#914d75" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            <path d="M108 205 Q140 220 172 205" stroke="#ffc2cd" stroke-width="1.5" fill="none" opacity=".8"/>
+            <path d="M74 148 Q61 112 78 81 Q72 125 88 151 L90 202 Q77 180 74 148Z" fill="url(#hair)"/>
+            <path d="M204 148 Q218 112 201 81 Q207 125 192 151 L190 202 Q203 180 204 148Z" fill="url(#hair)"/>
+            <path d="M84 269 Q111 252 140 260 Q169 252 196 269 L209 310 H71Z" fill="#181d38" opacity=".76"/>
+            <path d="M106 248 L140 286 L174 248" fill="none" stroke="#c5c8ff" stroke-width="2.5"/>
+            <path d="M140 285 V326" stroke="#7af0ff" stroke-width="2" opacity=".85"/>
+            <circle cx="140" cy="290" r="5" fill="#7af0ff"/>
+            <path d="M60 316 H220" stroke="#98a6ff" stroke-width="1" opacity=".4"/>
+          </svg>
+          <div class="avatar-label"><span class="avatar-pulse"></span><span id="avatarMood">STANDBY</span></div>
+        </div>
+        <div class="identity-block">
+          <p class="eyebrow">YOUR DIGITAL COMPANION</p>
+          <h1>Virtual AI<span class="title-period">.</span></h1>
+          <p class="muted-copy">The software intelligence layer for your humanoid robotics project.</p>
+        </div>
+        <div class="system-metrics">
+          <div class="metric-row"><span>AI PROVIDER</span><strong id="providerState" class="state-value">Checking…</strong></div>
+          <div class="metric-row"><span>MODEL</span><strong id="modelState">—</strong></div>
+          <div class="metric-row"><span>PHYSICAL MOTION</span><strong class="safe-state"><span class="status-dot"></span> DISABLED</strong></div>
+          <div class="metric-row"><span>SHARED MEMORY</span><strong id="memoryState">Connecting…</strong></div>
+        </div>
+        <div class="note-card"><span class="note-icon" aria-hidden="true">i</span><p>This is a software simulation. The illustration is an interface avatar, not a live camera feed or a physical robot.</p></div>
+      </aside>
+
+      <section class="conversation-panel" aria-label="AI conversation">
+        <div class="conversation-heading">
+          <div><div class="panel-overline">PRIVATE SESSION <span class="heading-separator">/</span> SHARED ACROSS DEVICES</div><h2>Conversation</h2></div>
+          <div class="conversation-actions"><span id="connectionPill" class="connection-pill"><span class="status-dot"></span><span id="connectionLabel">Connecting</span></span><button id="clearButton" class="text-button" type="button" title="Clear the shared conversation">Clear chat</button></div>
+        </div>
+
+        <div id="setupBanner" class="setup-banner" hidden>
+          <div class="setup-symbol" aria-hidden="true">!</div>
+          <div><strong>Real AI is not connected yet</strong><p>This app will not invent replies. Configure <code>OPENAI_API_KEY</code> on the server and restart it. See <a href="https://github.com/ravaunrichards/human_ai_robot/blob/main/docs/virtual_ai_web.md" id="setupDocsLink">the setup guide</a> in the repository if available.</p></div>
+        </div>
+
+        <div id="messages" class="messages" aria-live="polite" aria-label="Conversation messages">
+          <div id="emptyState" class="empty-state">
+            <div class="empty-icon" aria-hidden="true"><svg viewBox="0 0 40 40"><path d="M20 4 23.8 16.2 36 20l-12.2 3.8L20 36l-3.8-12.2L4 20l12.2-3.8Z"/><path d="m31 4 1.5 4.5L37 10l-4.5 1.5L31 16l-1.5-4.5L25 10l4.5-1.5Z"/></svg></div>
+            <h3>Your conversation starts here</h3>
+            <p>Messages sent from your phone or computer join the same server-side conversation.</p>
+            <div class="prompt-chips"><button type="button" class="prompt-chip" data-prompt="Help me plan the next phase of my humanoid robot software.">Plan my next phase <span>↗</span></button><button type="button" class="prompt-chip" data-prompt="Explain the current software architecture in my human_ai_robot project.">Review my architecture <span>↗</span></button></div>
+          </div>
+        </div>
+
+        <div id="pendingMessage" class="pending-message" hidden><span class="typing-dots"><i></i><i></i><i></i></span><span>Waiting for the AI provider…</span></div>
+        <div id="errorBanner" class="error-banner" role="alert" hidden></div>
+
+        <form id="composer" class="composer">
+          <label class="sr-only" for="messageInput">Message the virtual AI</label>
+          <textarea id="messageInput" rows="1" maxlength="4000" placeholder="Message your virtual AI…" autocomplete="off" required></textarea>
+          <div class="composer-bottom"><div class="composer-tools"><button id="micButton" class="tool-button" type="button" aria-label="Dictate a message" title="Dictate a message"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3m-4 0h8"/></svg><span>Voice input</span></button><button id="voiceOutputButton" class="tool-button" type="button" aria-pressed="false" title="Read AI replies aloud"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M17 9a4 4 0 0 1 0 6m2-9a8 8 0 0 1 0 12"/></svg><span>Voice off</span></button></div><div class="send-group"><span id="charCount" class="char-count">0 / 4000</span><button id="sendButton" class="send-button" type="submit" disabled><span>Send</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button></div></div>
+        </form>
+        <footer class="conversation-footer"><span>AI-generated responses require an active provider and may be wrong.</span><span>SIMULATION ONLY · NO REAL MOTOR OUTPUT</span></footer>
+      </section>
+    </main>
+  </div>
+
+  <div id="accessOverlay" class="overlay" hidden>
+    <form id="accessForm" class="access-card">
+      <div class="access-logo" aria-hidden="true">H<span>_</span>AI</div>
+      <p class="eyebrow">PROTECTED REMOTE SESSION</p>
+      <h2>Enter your access key</h2>
+      <p class="muted-copy">Use the same server access key on your phone and computer to reach the same shared AI session.</p>
+      <label for="accessInput">Server access key</label>
+      <input id="accessInput" type="password" autocomplete="current-password" required placeholder="Enter ROBOT_ACCESS_TOKEN">
+      <p id="accessError" class="access-error" hidden></p>
+      <button class="primary-button" type="submit">Connect securely</button>
+    </form>
+  </div>
+
+  <div id="settingsOverlay" class="overlay" hidden>
+    <section class="settings-card" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="settings-header"><div><p class="eyebrow">PREFERENCES</p><h2 id="settingsTitle">Connection & voice</h2></div><button id="closeSettings" class="icon-button" type="button" aria-label="Close settings">×</button></div>
+      <div class="settings-item"><div><strong>Read AI replies aloud</strong><p>Uses your device's built-in speech synthesis.</p></div><button id="settingsVoiceToggle" class="switch" type="button" role="switch" aria-checked="false" aria-label="Toggle spoken replies"><span></span></button></div>
+      <div class="settings-item"><div><strong>Shared conversation</strong><p>Messages are held in memory by the server and shared across connected devices while it runs.</p></div><span class="settings-tag">ONE SESSION</span></div>
+      <div class="settings-item"><div><strong>Physical movement</strong><p>Real motor control remains disabled in this virtual interface.</p></div><span class="settings-tag safe">LOCKED</span></div>
+      <button id="settingsDone" class="primary-button" type="button">Done</button>
+    </section>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>
