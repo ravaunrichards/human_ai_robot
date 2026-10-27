@@ -1,0 +1,26 @@
+# Render Blueprint for the existing human_ai_robot service.
+# This is designed to match the already-existing resource by name so it can be
+# adopted by a Blueprint instead of creating a second copy.
+services:
+  - type: web
+    name: human-ai-robot-virtual-ai
+    runtime: python
+    plan: free
+    region: virginia
+    repo: https://github.com/ravaunrichards/human_ai_robot
+    branch: main
+    buildCommand: pip install -e .
+    startCommand: python -m software.web_server --host 0.0.0.0
+    healthCheckPath: /api/health
+    autoDeployTrigger: commit
+    previews:
+      generation: off
+    envVars:
+      # If this already exists on the service, preserve its current value.
+      # When first added via a Blueprint, Render may prompt for the secret.
+      - key: OPENAI_API_KEY
+        sync: false
+      # Keep public hosting safe: the app refuses non-loopback binding without this.
+      # Render generates a value only if the variable is not already present.
+      - key: ROBOT_ACCESS_TOKEN
+        generateValue: true
