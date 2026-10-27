@@ -30,7 +30,7 @@
         <div class="panel-overline"><span class="tiny-square"></span> EMBODIMENT LINK</div>
         <div class="avatar-stage" id="avatarStage">
           <div class="avatar-glow"></div>
-          <model-viewer class="avatar-model-viewer" id="companionModel" src="/api/3d-models/beulah.glb" alt="Animated three-dimensional human avatar for Beulah" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1.05" camera-orbit="0deg 75deg 3.1m" field-of-view="30deg" interaction-prompt="auto" autoplay animation-name="idle" loading="eager" reveal="auto" tone-mapping="neutral">
+          <model-viewer class="avatar-model-viewer" id="companionModel" src="/api/3d-models/beulah.glb" alt="Animated three-dimensional human avatar for Beulah" camera-controls touch-action="pan-y" shadow-intensity="1.35" exposure="1.15" environment-image="neutral" camera-orbit="0deg 78deg 2.8m" field-of-view="28deg" interaction-prompt="auto" autoplay animation-name="idle" loading="eager" reveal="auto" tone-mapping="aces">
             <div slot="poster" class="model-loading"><span class="model-loading-spinner"></span><strong>Loading 3D human model</strong><span>First load may take a moment.</span></div>
             <div slot="progress-bar" class="model-progress"><div class="model-progress-fill"></div></div>
           </model-viewer>
@@ -45,7 +45,7 @@
             <button type="button" class="companion-choice" data-companion="prudence" aria-pressed="false">Prudence · 3D</button>
           </div>
           <div class="model-actions"><label class="animation-label" for="animationSelect">ANIMATION<select id="animationSelect" aria-label="Choose 3D character animation"><option value="">Loading clips…</option></select></label><button id="resetCameraButton" class="model-reload-button" type="button">Reset view</button><button id="reloadModelButton" class="model-reload-button" type="button">Reload model</button></div>
-          <p class="muted-copy model-disclaimer">Interactive, rotatable, animation-ready 3D humans. These licensed base models are not yet verified likenesses of your selected Beulah and Prudence dolls.</p>
+          <p class="muted-copy model-disclaimer">Cinematic 3D character stage with rotation, zoom, and available motion clips. The base models are not yet faithful reconstructions of the selected Beulah and Prudence dolls.</p>
         </div>
         <div class="system-metrics">
           <div class="metric-row"><span>AI PROVIDER</span><strong id="providerState" class="state-value">Checking…</strong></div>

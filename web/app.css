@@ -44,3 +44,15 @@ model-viewer[loaded] .model-loading{display:none;}
  .model-reload-button{flex:1;}
  .system-metrics{margin-top:3px;}
 }
+
+
+/* Cinematic character stage: never fall back to a white canvas. */
+.avatar-stage{background:radial-gradient(ellipse at 50% 38%,rgba(72,83,137,.20) 0%,rgba(15,19,34,.82) 42%,#060810 82%)!important;border-radius:14px;}
+.avatar-stage:before{width:74%;height:74%;border-color:rgba(158,173,222,.075);box-shadow:0 0 80px rgba(74,82,145,.08) inset;}
+.avatar-stage:after{width:60%;height:60%;border-color:rgba(116,230,242,.075);border-style:solid;}
+.avatar-glow{width:46%;height:42%;top:28%;background:rgba(105,112,190,.15);filter:blur(62px);}
+.avatar-model-viewer{background:#070911!important;background-color:#070911!important;--poster-color:#070911!important;--progress-mask:#070911!important;border:1px solid rgba(161,177,231,.09);border-radius:14px;outline:none;}
+.avatar-model-viewer::part(default-progress-bar){background:#74e6f2;}
+.model-loading{background:radial-gradient(ellipse at center,rgba(43,51,88,.32),transparent 72%);}
+@media(min-width:1000px){.layout{grid-template-columns:minmax(365px,430px) minmax(0,1fr);gap:24px}.avatar-stage{height:min(66vh,640px);min-height:480px}.avatar-model-viewer{min-height:450px}.companion-panel{padding:24px 25px}}
+@media(max-width:660px){.avatar-stage{height:min(70vh,590px);min-height:410px;background:radial-gradient(ellipse at 50% 40%,rgba(72,83,137,.2),#060810 78%)!important}.avatar-model-viewer{min-height:380px;border-radius:12px}}
