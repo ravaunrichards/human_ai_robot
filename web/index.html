@@ -7,6 +7,7 @@
   <meta name="description" content="The browser-based virtual AI interface for the human_ai_robot simulation project.">
   <title>HUMAN AI ROBOT — Virtual Companion</title>
   <link rel="stylesheet" href="/app.css">
+  <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.4.0/model-viewer.min.js"></script>
   <script src="/app.js" defer></script>
 </head>
 <body>
@@ -28,20 +29,23 @@
       <aside class="companion-panel" aria-label="Virtual companion status">
         <div class="panel-overline"><span class="tiny-square"></span> EMBODIMENT LINK</div>
         <div class="avatar-stage" id="avatarStage">
-          <div class="orb-orbit orbit-one"></div>
-          <div class="orb-orbit orbit-two"></div>
           <div class="avatar-glow"></div>
-          <img class="avatar avatar-photo" id="companionPhoto" src="https://novabeige.com/cdn/shop/files/Beige_Minimalist_New_Heels_Collection_Instagram_Post_-_2025-08-29T214646.686.jpg?v=1756496922&width=416" alt="Beulah reference image from the selected Nova Beige listing" loading="eager" referrerpolicy="no-referrer">
-          <div class="avatar-label"><span class="avatar-pulse"></span><span id="avatarMood">BEULAH · STANDBY</span></div>
+          <model-viewer class="avatar-model-viewer" id="companionModel" src="/api/3d-models/beulah.glb" alt="Animated three-dimensional human avatar for Beulah" camera-controls touch-action="pan-y" shadow-intensity="1" exposure="1.05" camera-orbit="0deg 75deg 3.1m" field-of-view="30deg" interaction-prompt="auto" autoplay animation-name="idle" loading="eager" reveal="auto" tone-mapping="neutral">
+            <div slot="poster" class="model-loading"><span class="model-loading-spinner"></span><strong>Loading 3D human model</strong><span>First load may take a moment.</span></div>
+            <div slot="progress-bar" class="model-progress"><div class="model-progress-fill"></div></div>
+          </model-viewer>
+          <div id="modelError" class="model-error" hidden>3D model could not load from the model host. Check your internet connection, then press Reload model.</div>
+          <div class="avatar-label"><span class="avatar-pulse"></span><span id="avatarMood">BEULAH · 3D MODEL</span></div>
         </div>
         <div class="identity-block">
           <p class="eyebrow">YOUR DIGITAL COMPANIONS</p>
           <h1 id="companionName">Beulah<span class="title-period">.</span></h1>
-          <div class="companion-switch" role="group" aria-label="Choose visible companion">
-            <button type="button" class="companion-choice active" data-companion="beulah" aria-pressed="true">Beulah</button>
-            <button type="button" class="companion-choice" data-companion="prudence" aria-pressed="false">Prudence</button>
+          <div class="companion-switch" role="group" aria-label="Choose visible 3D model">
+            <button type="button" class="companion-choice active" data-companion="beulah" aria-pressed="true">Beulah · 3D</button>
+            <button type="button" class="companion-choice" data-companion="prudence" aria-pressed="false">Prudence · 3D</button>
           </div>
-          <p class="muted-copy">Reference appearance from your selected listings. AI conversation connection is configured separately.</p>
+          <div class="model-actions"><label class="animation-label" for="animationSelect">ANIMATION<select id="animationSelect" aria-label="Choose 3D character animation"><option value="">Loading clips…</option></select></label><button id="resetCameraButton" class="model-reload-button" type="button">Reset view</button><button id="reloadModelButton" class="model-reload-button" type="button">Reload model</button></div>
+          <p class="muted-copy model-disclaimer">Interactive, rotatable, animation-ready 3D humans. These licensed base models are not yet verified likenesses of your selected Beulah and Prudence dolls.</p>
         </div>
         <div class="system-metrics">
           <div class="metric-row"><span>AI PROVIDER</span><strong id="providerState" class="state-value">Checking…</strong></div>
@@ -49,7 +53,7 @@
           <div class="metric-row"><span>PHYSICAL MOTION</span><strong class="safe-state"><span class="status-dot"></span> DISABLED</strong></div>
           <div class="metric-row"><span>SHARED MEMORY</span><strong id="memoryState">Connecting…</strong></div>
         </div>
-        <div class="note-card"><span class="note-icon" aria-hidden="true">i</span><p>This is a software simulation. The displayed photos are reference images from the selected product listings. They are not animated 3D avatars or a physical robot.</p></div>
+        <div class="note-card"><span class="note-icon" aria-hidden="true">i</span><p>The viewer is integrated in this interface. First-time model download requires internet; model files are cached on the server. Physical robot motion remains disabled.</p></div>
       </aside>
 
       <section class="conversation-panel" aria-label="AI conversation">

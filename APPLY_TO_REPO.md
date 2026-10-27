@@ -1,37 +1,35 @@
-# Apply this virtual AI web update to the existing repository
+# Apply the 3D companion display to a local checkout
 
-This is an **additions-only overlay** for `ravaunrichards/human_ai_robot`. The following paths were checked on 2026-10-26 and did not exist in the repository, so the overlay will not replace existing source files:
+This ZIP is a **local build overlay**, not a completed change to your GitHub repository or any hosted website. I have not applied it to GitHub or Render. Before combining it with a repository, review the existing files and merge conflicts rather than blindly overwriting source.
 
-- `software/virtual_ai_service.py`
-- `software/web_server.py`
-- `web/index.html`
-- `web/app.css`
-- `web/app.js`
-- `tests/test_virtual_ai_service.py`
-- `docs/virtual_ai_web.md`
+## What changed
 
-## Apply
-
-Extract this ZIP into the root of a fresh checkout of `https://github.com/ravaunrichards/human_ai_robot`. Keep the directory structure shown above. Do not copy any API key into these files.
+- `web/index.html`, `web/app.css`, and `web/app.js` now render interactive 3D adult human models using Google's `<model-viewer>` web component.
+- `software/web_server.py` adds two fixed-name 3D asset routes and an on-server cache for the CC0 GLB models. It does not accept arbitrary URLs.
+- `tests/test_3d_model_routes.py` covers the GLB response/cache and rejects unknown model names.
+- Documentation records the asset sources, network requirements, known limitations, and checks run.
 
 ## Run locally
 
-From the repository root, configure a real API key on the computer/server (not in the browser):
+Use Python 3.9 or newer from the overlay root. For AI chat, configure a real provider API key on the server—not in browser JavaScript—and run:
 
-**Linux/macOS:** `export OPENAI_API_KEY='your-key'`
+```sh
+export OPENAI_API_KEY='your-key'
+python -m software.web_server
+```
 
-**Windows PowerShell:** `$env:OPENAI_API_KEY = 'your-key'`
+Open `http://127.0.0.1:8765`. Without a valid AI API key, the 3D viewer can still operate, while chat correctly reports that no real AI provider is configured. The first 3D-model request downloads about 19–21 MB from the model host for the selected character and caches it. The server must have outbound HTTPS access to `www.innerscene.com`; the browser must have access to Google's hosted `<model-viewer>` runtime. You may set `ROBOT_MODEL_CACHE_DIR` to a persistent storage path.
 
-Then run `python -m software.web_server` and open `http://127.0.0.1:8765`. See `docs/virtual_ai_web.md` for LAN sharing, a shared access token, and hosted deployment guidance.
+Run all included tests from the overlay root:
 
-To share one conversation on a phone and computer on the same Wi-Fi network, set `ROBOT_ACCESS_TOKEN` and run `python -m software.web_server --host 0.0.0.0`. Open the computer's LAN IP and port 8765 on the phone, then enter the same access token on both devices. Never expose this raw server directly to the public internet; use a hosted HTTPS service and protected environment variables for remote access.
+```sh
+python -m unittest discover -s tests -v
+```
 
-Run the added unit tests with `python -m unittest discover -s tests -p 'test_virtual_ai_service.py' -v`.
+## Current limits and safety
 
-## Safety and limits
-
-- No OpenAI API key is bundled.
-- No fake/echo response is used for browser chat. Without a real model credential, chat is blocked with a clear setup message.
-- The avatar is an interface illustration, not a physical robot or an asserted 3D simulation.
-- Real hardware motion remains disabled.
-- Shared conversation history is held in server memory and clears when the server restarts.
+- The 3D models are licensed CC0 rigged human base models. They are **not exact 3D likenesses** reconstructed from the Nova Beige Beulah and Prudence product images.
+- Rendering the remote GLB files could not be verified in this build container because outbound DNS/network access is restricted. Automated route, cache, syntax and unit tests pass; a live model load must be verified where outbound HTTPS is available.
+- The AI provider is configured separately. No fake replies are used when the provider is unavailable.
+- Physical robot movement remains disabled.
+- This package has not been pushed to GitHub or deployed to Render.

@@ -293,35 +293,97 @@
     try { recognition.start(); } catch { state.recognition = null; showToast('Could not start microphone. Check permissions.'); }
   });
 
-  // Show the exact selected reference photos for Beulah and Prudence.
+  // Interactive, rigged 3D human models. These are licensed CC0 base assets, not
+  // claimed to be exact likenesses of the product dolls selected as Beulah and Prudence.
   const companionProfiles = {
     beulah: {
-      name: 'Beulah', mood: 'BEULAH · STANDBY',
-      src: 'https://novabeige.com/cdn/shop/files/Beige_Minimalist_New_Heels_Collection_Instagram_Post_-_2025-08-29T214646.686.jpg?v=1756496922&width=416',
-      alt: 'Beulah reference image from the selected Nova Beige listing'
+      name: 'Beulah', mood: 'BEULAH · 3D MODEL', modelUrl: '/api/3d-models/beulah.glb',
+      sourceUrl: 'https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-maya-3d-person-animated-1499b2fd',
+      title: 'Interactive 3D human model preview for Beulah'
     },
     prudence: {
-      name: 'Prudence', mood: 'PRUDENCE · STANDBY',
-      src: 'https://novabeige.com/cdn/shop/files/ITD133-07.jpg?v=1756500789&width=416',
-      alt: 'Prudence reference image from the selected Nova Beige listing'
+      name: 'Prudence', mood: 'PRUDENCE · 3D MODEL', modelUrl: '/api/3d-models/prudence.glb',
+      sourceUrl: 'https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-harper-3d-person-animated-797e1e2a',
+      title: 'Interactive 3D human model preview for Prudence'
     }
   };
-  document.querySelectorAll('[data-companion]').forEach((button) => {
-    button.addEventListener('click', () => {
-      const profile = companionProfiles[button.dataset.companion];
-      if (!profile) return;
-      const photo = document.getElementById('companionPhoto');
-      photo.src = profile.src;
-      photo.alt = profile.alt;
-      document.getElementById('companionName').innerHTML = `${profile.name}<span class="title-period">.</span>`;
-      document.getElementById('avatarMood').textContent = profile.mood;
-      document.querySelectorAll('[data-companion]').forEach((choice) => {
-        const active = choice === button;
-        choice.classList.toggle('active', active);
-        choice.setAttribute('aria-pressed', String(active));
-      });
+  let selectedCompanion = 'beulah';
+  const model = document.getElementById('companionModel');
+  const animationSelect = document.getElementById('animationSelect');
+  const modelError = document.getElementById('modelError');
+  const setModelMood = (text) => { document.getElementById('avatarMood').textContent = text; };
+  const syncAnimationOptions = () => {
+    if (!model || !animationSelect) return;
+    const animations = Array.isArray(model.availableAnimations) ? model.availableAnimations : [];
+    animationSelect.replaceChildren();
+    if (!animations.length) {
+      const option = document.createElement('option'); option.value = ''; option.textContent = 'No animation clips';
+      animationSelect.append(option); animationSelect.disabled = true; return;
+    }
+    animations.forEach((animation) => {
+      const option = document.createElement('option'); option.value = animation; option.textContent = animation;
+      animationSelect.append(option);
     });
+    animationSelect.disabled = false;
+    const idle = animations.find((name) => name.toLowerCase() === 'idle') || animations[0];
+    animationSelect.value = idle;
+    model.animationName = idle;
+    if (model.hasAttribute('autoplay')) model.play();
+  };
+  const applyCompanion = (key, reload = false) => {
+    const profile = companionProfiles[key];
+    if (!profile || !model) return;
+    selectedCompanion = key;
+    modelError.hidden = true;
+    model.alt = profile.title;
+    if (reload || model.getAttribute('src') !== profile.modelUrl) {
+      model.setAttribute('src', profile.modelUrl);
+      animationSelect.replaceChildren();
+      const option = document.createElement('option'); option.value = ''; option.textContent = 'Loading clips…';
+      animationSelect.append(option); animationSelect.disabled = true;
+      setModelMood(`${profile.name.toUpperCase()} · LOADING 3D`);
+    }
+    document.getElementById('companionName').innerHTML = `${profile.name}<span class="title-period">.</span>`;
+    document.querySelectorAll('[data-companion]').forEach((choice) => {
+      const active = choice.dataset.companion === key;
+      choice.classList.toggle('active', active);
+      choice.setAttribute('aria-pressed', String(active));
+    });
+  };
+  model?.addEventListener('progress', (event) => {
+    const fill = model.querySelector('.model-progress-fill');
+    if (fill) fill.style.width = `${Math.round((event.detail?.totalProgress || 0) * 100)}%`;
   });
+  model?.addEventListener('load', () => {
+    modelError.hidden = true;
+    setModelMood(`${companionProfiles[selectedCompanion].name.toUpperCase()} · 3D READY`);
+    syncAnimationOptions();
+  });
+  window.addEventListener('load', () => {
+    if (!customElements.get('model-viewer')) {
+      modelError.textContent = 'The 3D viewer engine could not load. Allow access to Google Hosted Libraries, then press Reload model.';
+      modelError.hidden = false;
+      setModelMood('3D ENGINE UNAVAILABLE');
+    }
+  }, { once: true });
+  model?.addEventListener('error', () => {
+    modelError.hidden = false;
+    setModelMood(`${companionProfiles[selectedCompanion].name.toUpperCase()} · MODEL ERROR`);
+  });
+  animationSelect?.addEventListener('change', () => {
+    if (!animationSelect.value || !model) return;
+    model.animationName = animationSelect.value;
+    model.play();
+  });
+  document.getElementById('resetCameraButton')?.addEventListener('click', () => {
+    if (model && typeof model.resetTurntableRotation === 'function') model.resetTurntableRotation();
+    if (model && typeof model.jumpCameraToGoal === 'function') model.jumpCameraToGoal();
+    if (model) { model.cameraOrbit = '0deg 75deg 3.1m'; model.fieldOfView = '30deg'; }
+  });
+  document.querySelectorAll('[data-companion]').forEach((button) => {
+    button.addEventListener('click', () => applyCompanion(button.dataset.companion));
+  });
+  document.getElementById('reloadModelButton')?.addEventListener('click', () => applyCompanion(selectedCompanion, true));
 
   syncVoiceButtons();
   updateComposer();

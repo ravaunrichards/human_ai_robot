@@ -1,23 +1,20 @@
-# Beulah and Prudence visual update
+# Beulah & Prudence 3D Display Update
 
-## Implemented in this overlay
-- Replaced the generic illustrated avatar with the product-listing reference photo for Beulah.
-- Added an on-screen Beulah / Prudence selector that switches the visible reference photo, name, accessible description, and status label.
-- Kept the existing conversation UI, voice controls, provider status checks, shared-history polling, and simulation-only safety state.
-- Kept the update additions-only; no GitHub repository or Render service was modified.
+## Included
+- Replaced broken vendor-hosted photo display with an integrated interactive `<model-viewer>` stage.
+- Added full 3D model rotation/zoom controls, reset-view and animation selection when clips are present.
+- Added Beulah / Prudence selector buttons.
+- Added a same-origin model endpoint that fetches only two allowlisted, CC0 GLB files from Innerscene and caches them in `/tmp/human_ai_robot_models`; arbitrary proxy URLs are not accepted.
+- Models are named by selected companion in the UI, but are licensed base characters, not verified likenesses of the selected Nova Beige product dolls.
+- Physical robot motion remains disabled. No GitHub repository or Render service was changed.
 
-## Reference image sources
-- Beulah: https://novabeige.com/cdn/shop/files/Beige_Minimalist_New_Heels_Collection_Instagram_Post_-_2025-08-29T214646.686.jpg?v=1756496922&width=416
-- Prudence: https://novabeige.com/cdn/shop/files/ITD133-07.jpg?v=1756500789&width=416
+## Asset sources and license
+- Maya animated 3D human model (Beulah display profile): https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-maya-3d-person-animated-1499b2fd
+- Harper animated 3D human model (Prudence display profile): https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-harper-3d-person-animated-797e1e2a
+- Innerscene labels both GLB assets public-domain CC0. The source pages describe rigged human models with animation clips.
+- The Google `<model-viewer>` runtime is loaded from Google's hosted libraries at version 4.4.0. It requires an internet connection unless later vendored locally.
 
-The images are loaded from the vendor's website at runtime because this build environment could not download the image bytes directly. Internet access is therefore required to display them; if the vendor changes or removes these URLs, the images may stop loading. The package does not contain local copies of the photos.
-
-## Not implemented by this update
-- Animated/3D characters, lip-sync, facial expressions, or body animation.
-- A configured live AI provider or API credentials. The existing backend still requires a valid server-side API key and enabled model.
-- Deployment to GitHub, Render, or any external service.
-
-## Verification performed
-- `node --check overlay/web/app.js`: passed.
-- `unzip -t human_ai_robot_beulah_prudence_visual.zip`: passed.
-- Browser-based end-to-end rendering and remote image loading were not verified in this environment.
+## Important limitations
+- The 3D characters are not reconstructed from Beulah's and Prudence's product photos and must not be represented as exact likenesses. Creating faithful likenesses requires additional 3D modeling/generation and reference views.
+- Model files are downloaded by the server on first request. The model host must remain accessible and the server must have outbound HTTPS access. Model fetch is not verified in the local build environment because its DNS/network is restricted.
+- Provider API connectivity and live AI responses are separate and are not newly verified here.

@@ -15,6 +15,7 @@ import os
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Dict, Optional, Tuple
+from urllib.request import Request, urlopen
 from urllib.parse import urlparse
 
 from software.virtual_ai_service import AINotConfigured, AIProviderFailure, VirtualAIService
@@ -31,6 +32,12 @@ MIME_TYPES = {
     ".ico": "image/x-icon",
 }
 MAX_REQUEST_BYTES = 16_384
+MAX_MODEL_BYTES = 32 * 1024 * 1024
+MODEL_URLS = {
+    "beulah.glb": "https://www.innerscene.com/api/library/locomotion-collection-maya-3d-person-animated-1499b2fd/download",
+    "prudence.glb": "https://www.innerscene.com/api/library/locomotion-collection-harper-3d-person-animated-797e1e2a/download",
+}
+MODEL_CACHE_DIR = Path(os.environ.get("ROBOT_MODEL_CACHE_DIR", "/tmp/human_ai_robot_models"))
 
 
 def _is_loopback(host: str) -> bool:
@@ -56,7 +63,7 @@ def make_handler(service: VirtualAIService, access_token: str):
             self.send_header("X-Content-Type-Options", "nosniff")
             self.send_header("Referrer-Policy", "no-referrer")
             self.send_header("X-Frame-Options", "DENY")
-            self.send_header("Content-Security-Policy", "default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
+            self.send_header("Content-Security-Policy", "default-src 'self'; style-src 'self'; script-src 'self' https://ajax.googleapis.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:; object-src 'none'; base-uri 'none'; frame-ancestors 'none'")
 
         def _send_json(self, status: int, payload: Dict[str, object]) -> None:
             body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -115,6 +122,41 @@ def make_handler(service: VirtualAIService, access_token: str):
                 if not self._require_auth():
                     return
                 self._send_json(200, {"messages": service.history()})
+                return
+
+            # Public CC0 assets, restricted to two fixed filenames. This avoids arbitrary URL
+            # fetching and keeps the browser's GLB request same-origin (no third-party CORS).
+            model_name = path.removeprefix("/api/3d-models/") if path.startswith("/api/3d-models/") else ""
+            if model_name in MODEL_URLS:
+                try:
+                    MODEL_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+                    cache_path = MODEL_CACHE_DIR / model_name
+                    if not cache_path.is_file() or cache_path.stat().st_size < 12:
+                        request = Request(MODEL_URLS[model_name], headers={"User-Agent": "human-ai-robot/1.1", "Accept": "model/gltf-binary, application/octet-stream"})
+                        with urlopen(request, timeout=45) as upstream:
+                            blob = upstream.read(MAX_MODEL_BYTES + 1)
+                        if len(blob) > MAX_MODEL_BYTES:
+                            raise ValueError("3D model exceeds the 32 MiB safety limit.")
+                        if not blob.startswith(b"glTF"):
+                            raise ValueError("3D model host returned a file that is not GLB.")
+                        temporary = cache_path.with_suffix(".tmp")
+                        temporary.write_bytes(blob)
+                        temporary.replace(cache_path)
+                    blob = cache_path.read_bytes()
+                    if not blob.startswith(b"glTF"):
+                        cache_path.unlink(missing_ok=True)
+                        raise ValueError("Cached 3D model failed GLB validation.")
+                except Exception as exc:  # noqa: BLE001
+                    # Keep upstream details out of client-visible errors; the app has a retry button.
+                    print("3D model fetch failed for %s: %s" % (model_name, exc.__class__.__name__))
+                    self._send_json(502, {"error": "Could not retrieve the selected 3D model. Check server outbound access and retry."})
+                    return
+                self.send_response(200)
+                self._headers("model/gltf-binary", len(blob))
+                self.send_header("Cache-Control", "public, max-age=86400")
+                self.send_header("Content-Disposition", 'inline; filename="%s"' % model_name)
+                self.end_headers()
+                self.wfile.write(blob)
                 return
 
             relative = "index.html" if path in ("/", "/index.html") else path.lstrip("/")

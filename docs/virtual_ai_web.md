@@ -32,7 +32,17 @@ Then open `http://127.0.0.1:8765` on the computer running the server. The API ke
 
 The server calls the OpenAI-compatible Chat Completions API using the official `/v1/chat/completions` endpoint shape. `OPENAI_BASE_URL` can change the API base for an OpenAI-compatible provider. If the account does not have access to the configured model, change `OPENAI_MODEL` to a model available to that account.
 
-## 3. Use it from phone and computer on one Wi-Fi network
+## 3. Interactive 3D companion display
+
+The visual panel uses Google's `<model-viewer>` web component to render two rigged adult human GLB assets with mouse/touch rotation, zoom, a reset-view button, and an animation selector. The server exposes only two fixed model names at `/api/3d-models/beulah.glb` and `/api/3d-models/prudence.glb`; it does not accept arbitrary proxy URLs. Files are downloaded from the CC0 asset host on first request and cached under `ROBOT_MODEL_CACHE_DIR` (default `/tmp/human_ai_robot_models`). The server therefore needs outbound HTTPS access to `www.innerscene.com`, and the browser needs access to Google's hosted `model-viewer` runtime. Set `ROBOT_MODEL_CACHE_DIR` to a persistent disk path if you want to keep the large GLB files through service restarts.
+
+**Identity limit:** these are animation-ready base human models, not verified likenesses of the specific product dolls chosen as Beulah and Prudence. The viewer and model delivery are implemented; faithful likeness creation remains a separate modeling/generation task requiring suitable reference coverage.
+
+The CC0 assets are listed as:
+- Maya locomotion collection: https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-maya-3d-person-animated-1499b2fd
+- Harper locomotion collection: https://www.innerscene.com/tools/library/3d-parts/locomotion-collection-harper-3d-person-animated-797e1e2a
+
+## 4. Use it from phone and computer on one Wi-Fi network
 
 Run the server on a trusted computer. Set an access token before allowing other devices to connect:
 
@@ -65,16 +75,17 @@ The access token protects the chat, history, and reset endpoints. The service re
 | `ROBOT_HOST` | `127.0.0.1` | Listener address; non-loopback binding requires an access token. |
 | `ROBOT_PORT` | `8765` | Listener port. |
 | `ROBOT_ACCESS_TOKEN` | none | Required for non-loopback hosting; same secret must be entered on every device. |
+| `ROBOT_MODEL_CACHE_DIR` | `/tmp/human_ai_robot_models` | Optional cache directory for the two allowlisted GLB models; use persistent storage if required. |
 
 
-## Deploy for access beyond your Wi-Fi
+## 5. Deploy for access beyond your Wi-Fi
 
 The same app can run on one hosted Python web service and serve both the phone and computer. On a platform such as Render, connect the repository **after adding these new files**, set the build command to `pip install -e .`, and the start command to `python -m software.web_server --host 0.0.0.0`. Configure `OPENAI_API_KEY`, `ROBOT_ACCESS_TOKEN`, and optionally `OPENAI_MODEL` as protected environment variables in the hosting dashboard—not in source code. The server reads the platform's `PORT` variable automatically. Use the platform's HTTPS URL, enter the same access token on both devices, and keep a single server instance because this first version shares conversation state in process memory. Choose an always-on plan if you need consistent availability; a platform that sleeps or restarts may interrupt the session and clear history.
 
 ## Honest current limits
 
 - This is a real model-backed chat UI only after the server is configured with a valid API key and an accessible model. The status endpoint reports configuration; a successful first response verifies the provider credentials/model.
-- The avatar is an interface illustration, not a rendered 3D body, webcam feed, or robot hardware.
+- The 3D stage shows licensed CC0 rigged human base models, not a webcam feed, physical robot, or exact 3D likeness of the selected Beulah/Prudence product dolls. The 3D asset download/render path must be verified in the deployed environment because the local build environment used for this update cannot reach the asset host.
 - History is shared in server memory while the server runs, but is not persisted across server restarts.
 - Voice input uses the browser's built-in speech recognition when available. Spoken AI output uses the device's speech synthesis. Browser support and microphone permission vary by device.
 - The web UI does not send motion commands. Physical movement remains disabled and must continue to be controlled by the repository's independent safety gate and real-time layer.
@@ -82,10 +93,10 @@ The same app can run on one hosted Python web service and serve both the phone a
 
 ## Tests
 
-The added unit tests cover unconfigured-provider behaviour, real-provider adapter integration via a test double, non-fallback on provider failure, input limits, and shared-session reset:
+The unit tests cover unconfigured-provider behaviour, real-provider adapter integration via a test double, non-fallback on provider failure, input limits, shared-session reset, and safe allowlisted GLB proxy/cache behaviour:
 
 ```sh
-python -m unittest tests.test_virtual_ai_service -v
+python -m unittest discover -s tests -v
 ```
 
 These tests do not make real paid API calls. A live API check should be done manually after setting `OPENAI_API_KEY`.

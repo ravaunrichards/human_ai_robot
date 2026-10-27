@@ -1,24 +1,26 @@
-# Human AI Robot Visual Interface — Verification Report
+# Build verification — interactive 3D companion display
 
-Date: 2026-10-27
+## Automated checks
 
-## Included
-- Responsive browser interface (`web/index.html`, `web/app.css`, `web/app.js`)
-- Python HTTP/API server (`software/web_server.py`)
-- Server-side OpenAI-compatible model client (`software/virtual_ai_service.py`)
-- Unit tests and application/setup notes
+- `node --check web/app.js` — passed.
+- `python -m py_compile software/web_server.py software/virtual_ai_service.py` — passed.
+- `python -m unittest discover -s tests -v` — **8/8 tests passed**.
+- The 3D-route tests verify that an allowlisted GLB is served with `model/gltf-binary`, cached after first fetch, and that unknown model names return 404 without triggering a network fetch.
+- ZIP archive integrity is checked after packaging.
 
-## Checks run in this package
-- 6/6 virtual AI service unit tests passed.
-- Python bytecode compilation passed for included Python files.
-- `node --check web/app.js` passed.
-- Local HTTP smoke checks: `/`, `/app.css`, `/app.js`, `/api/status`, `/api/health` all returned HTTP 200.
-- Chat without a configured server-side API key returned HTTP 503 with a clear setup message; no fake/echo answer was generated.
-- Physical motion remains disabled in the service status.
+## What is built
 
-## Important limits
-- This is an additions-only package to apply to the existing repository, not a full copy of the original repository.
-- It has not been deployed to Render or pushed to GitHub. No GitHub or Render changes were made.
-- Real model replies require a valid `OPENAI_API_KEY`, model access, and API billing/credits configured on the server. No secret is included.
-- The visual is an interface illustration, not yet a photorealistic Beulah/Prudence model, a live camera feed, or a physical robot body.
-- Shared chat history is held in server memory and is cleared if the server restarts.
+- Integrated Google `<model-viewer>` stage with user-controlled rotation and zoom.
+- Beulah / Prudence selection, camera reset, animation picker populated from the actual model's available animation clips, loading feedback and error display.
+- Two fixed same-origin model endpoints with a server-side cache and a 32 MiB payload cap.
+- Physical robot movement remains disabled.
+
+## Not verified in this build environment
+
+- Outbound DNS/network access from this container is restricted, so the real upstream GLB files could not be downloaded or rendered here. The deployed server needs outbound HTTPS access to Innerscene; the browser needs access to Google's hosted `<model-viewer>` runtime. The user-visible stage shows a clear error and retry control if the assets cannot load.
+- The two CC0 human models are animation-ready base assets, **not exact 3D likenesses** reconstructed from Beulah's and Prudence's product images. The viewer integration is built; faithful likeness creation remains a separate 3D modeling task.
+- Provider/API connectivity and live AI replies were not newly verified.
+
+## External repository / hosting
+
+No GitHub repository was changed and no Render service was changed or deployed.
