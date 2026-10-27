@@ -11,9 +11,14 @@ import os
 import threading
 import urllib.error
 import urllib.request
+from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional
 
-from software.conversation import ConversationError, Message, OnlineProvider
+
+@dataclass(frozen=True)
+class Message:
+    role: str
+    content: str
 
 
 DEFAULT_SYSTEM_PROMPT = (
@@ -118,30 +123,25 @@ class VirtualAIService:
         self._history: List[Message] = [
             Message("system", system_prompt or os.environ.get("ROBOT_AI_SYSTEM_PROMPT") or DEFAULT_SYSTEM_PROMPT)
         ]
-        if request_fn is not None:
-            client = request_fn
+        if request_fn is not None and self.api_key:
+            self._request_fn = request_fn
         elif self.api_key:
-            client = lambda messages: _openai_compatible_request(
+            self._request_fn = lambda messages: _openai_compatible_request(
                 messages,
                 api_key=self.api_key,
                 model=self.model,
                 base_url=self.base_url,
             )
         else:
-            client = None
-        self._provider = (
-            OnlineProvider(client=client, api_key=self.api_key)
-            if client is not None and self.api_key
-            else None
-        )
+            self._request_fn = None
 
     def status(self) -> Dict[str, object]:
         with self._lock:
             return {
                 "service": "human_ai_robot",
-                "ai_configured": self._provider is not None,
-                "provider": "OpenAI-compatible Chat Completions" if self._provider else "Not configured",
-                "model": self.model if self._provider else None,
+                "ai_configured": self._request_fn is not None,
+                "provider": "OpenAI-compatible Chat Completions" if self._request_fn else "Not configured",
+                "model": self.model if self._request_fn else None,
                 "conversation_messages": sum(1 for item in self._history if item.role in ("user", "assistant")),
                 "simulation_only": True,
                 "motion_control": "disabled",
@@ -162,7 +162,7 @@ class VirtualAIService:
             raise ValueError("Message cannot be empty.")
         if len(cleaned) > 4000:
             raise ValueError("Message is too long; limit is 4,000 characters.")
-        if self._provider is None:
+        if self._request_fn is None:
             raise AINotConfigured(
                 "No real AI model is configured. Set OPENAI_API_KEY on the server and restart it. "
                 "This interface deliberately does not generate demo or echo replies."
@@ -173,11 +173,11 @@ class VirtualAIService:
             candidate = [self._history[0]] + self._history[1:]
             candidate.append(Message("user", cleaned))
             try:
-                answer = self._provider.generate(candidate)
-            except ConversationError as exc:
-                raise AIProviderFailure(str(exc)) from None
+                answer = self._request_fn(candidate)
             except VirtualAIError:
                 raise
+            except Exception as exc:  # noqa: BLE001
+                raise AIProviderFailure("AI provider request failed: " + exc.__class__.__name__) from None
             if not isinstance(answer, str) or not answer.strip():
                 raise AIProviderFailure("The AI provider returned no text.")
             self._history = candidate + [Message("assistant", answer.strip())]
