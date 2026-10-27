@@ -293,6 +293,36 @@
     try { recognition.start(); } catch { state.recognition = null; showToast('Could not start microphone. Check permissions.'); }
   });
 
+  // Show the exact selected reference photos for Beulah and Prudence.
+  const companionProfiles = {
+    beulah: {
+      name: 'Beulah', mood: 'BEULAH · STANDBY',
+      src: 'https://novabeige.com/cdn/shop/files/Beige_Minimalist_New_Heels_Collection_Instagram_Post_-_2025-08-29T214646.686.jpg?v=1756496922&width=416',
+      alt: 'Beulah reference image from the selected Nova Beige listing'
+    },
+    prudence: {
+      name: 'Prudence', mood: 'PRUDENCE · STANDBY',
+      src: 'https://novabeige.com/cdn/shop/files/ITD133-07.jpg?v=1756500789&width=416',
+      alt: 'Prudence reference image from the selected Nova Beige listing'
+    }
+  };
+  document.querySelectorAll('[data-companion]').forEach((button) => {
+    button.addEventListener('click', () => {
+      const profile = companionProfiles[button.dataset.companion];
+      if (!profile) return;
+      const photo = document.getElementById('companionPhoto');
+      photo.src = profile.src;
+      photo.alt = profile.alt;
+      document.getElementById('companionName').innerHTML = `${profile.name}<span class="title-period">.</span>`;
+      document.getElementById('avatarMood').textContent = profile.mood;
+      document.querySelectorAll('[data-companion]').forEach((choice) => {
+        const active = choice === button;
+        choice.classList.toggle('active', active);
+        choice.setAttribute('aria-pressed', String(active));
+      });
+    });
+  });
+
   syncVoiceButtons();
   updateComposer();
   loadStatus();

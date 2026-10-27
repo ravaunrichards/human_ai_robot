@@ -31,41 +31,17 @@
           <div class="orb-orbit orbit-one"></div>
           <div class="orb-orbit orbit-two"></div>
           <div class="avatar-glow"></div>
-          <svg class="avatar" viewBox="0 0 280 360" role="img" aria-label="Stylised virtual AI avatar illustration">
-            <defs>
-              <linearGradient id="hair" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a7a9ff"/><stop offset=".48" stop-color="#6d64bd"/><stop offset="1" stop-color="#29254f"/></linearGradient>
-              <linearGradient id="skin" x1="0" y1="0" x2=".92" y2="1"><stop offset="0" stop-color="#ffe0d4"/><stop offset=".55" stop-color="#d7a5a5"/><stop offset="1" stop-color="#9c7189"/></linearGradient>
-              <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e4e6ff"/><stop offset=".5" stop-color="#9ca2dc"/><stop offset="1" stop-color="#454a82"/></linearGradient>
-              <linearGradient id="visor" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#222845"/><stop offset="1" stop-color="#0c1327"/></linearGradient>
-            </defs>
-            <ellipse cx="140" cy="334" rx="75" ry="10" fill="#6573e4" opacity=".17"/>
-            <path d="M62 310 Q65 263 95 239 L114 223 H166 L185 239 Q215 263 218 310 L222 330 H58Z" fill="url(#body)" stroke="#b4bcff" stroke-opacity=".75" stroke-width="1.5"/>
-            <path d="M114 221 L114 190 H166 V221 Q158 244 140 247 Q122 244 114 221Z" fill="url(#skin)"/>
-            <path d="M76 150 Q66 81 108 50 Q144 24 180 51 Q219 82 204 160 L194 222 Q175 243 140 244 Q105 243 86 221Z" fill="url(#hair)"/>
-            <path d="M97 107 Q95 70 120 60 Q145 48 167 60 Q191 73 190 111 L187 168 Q183 199 164 216 Q151 228 140 228 Q126 228 113 216 Q95 199 92 168Z" fill="url(#skin)"/>
-            <path d="M89 120 Q73 95 94 63 Q112 37 145 42 Q185 43 197 78 Q201 96 190 119 L177 95 Q153 91 140 70 Q124 92 101 99Z" fill="url(#hair)"/>
-            <path d="M93 127 Q110 113 130 125" stroke="#3b355f" stroke-width="5" stroke-linecap="round" fill="none"/>
-            <path d="M151 125 Q171 112 187 127" stroke="#3b355f" stroke-width="5" stroke-linecap="round" fill="none"/>
-            <path d="M100 137 Q115 125 130 137 Q116 150 100 137Z" fill="url(#visor)" stroke="#6de5f7" stroke-opacity=".8" stroke-width="1.2"/>
-            <path d="M151 137 Q167 125 182 137 Q166 150 151 137Z" fill="url(#visor)" stroke="#6de5f7" stroke-opacity=".8" stroke-width="1.2"/>
-            <ellipse cx="115" cy="137" rx="4.5" ry="5.5" fill="#77edff"/><ellipse cx="167" cy="137" rx="4.5" ry="5.5" fill="#77edff"/>
-            <path d="M140 140 L133 166 Q140 172 147 166" stroke="#a36f82" stroke-width="2" fill="none" stroke-linecap="round"/>
-            <path d="M124 185 Q140 194 156 185" stroke="#914d75" stroke-width="2.5" fill="none" stroke-linecap="round"/>
-            <path d="M108 205 Q140 220 172 205" stroke="#ffc2cd" stroke-width="1.5" fill="none" opacity=".8"/>
-            <path d="M74 148 Q61 112 78 81 Q72 125 88 151 L90 202 Q77 180 74 148Z" fill="url(#hair)"/>
-            <path d="M204 148 Q218 112 201 81 Q207 125 192 151 L190 202 Q203 180 204 148Z" fill="url(#hair)"/>
-            <path d="M84 269 Q111 252 140 260 Q169 252 196 269 L209 310 H71Z" fill="#181d38" opacity=".76"/>
-            <path d="M106 248 L140 286 L174 248" fill="none" stroke="#c5c8ff" stroke-width="2.5"/>
-            <path d="M140 285 V326" stroke="#7af0ff" stroke-width="2" opacity=".85"/>
-            <circle cx="140" cy="290" r="5" fill="#7af0ff"/>
-            <path d="M60 316 H220" stroke="#98a6ff" stroke-width="1" opacity=".4"/>
-          </svg>
-          <div class="avatar-label"><span class="avatar-pulse"></span><span id="avatarMood">STANDBY</span></div>
+          <img class="avatar avatar-photo" id="companionPhoto" src="https://novabeige.com/cdn/shop/files/Beige_Minimalist_New_Heels_Collection_Instagram_Post_-_2025-08-29T214646.686.jpg?v=1756496922&width=416" alt="Beulah reference image from the selected Nova Beige listing" loading="eager" referrerpolicy="no-referrer">
+          <div class="avatar-label"><span class="avatar-pulse"></span><span id="avatarMood">BEULAH · STANDBY</span></div>
         </div>
         <div class="identity-block">
-          <p class="eyebrow">YOUR DIGITAL COMPANION</p>
-          <h1>Virtual AI<span class="title-period">.</span></h1>
-          <p class="muted-copy">The software intelligence layer for your humanoid robotics project.</p>
+          <p class="eyebrow">YOUR DIGITAL COMPANIONS</p>
+          <h1 id="companionName">Beulah<span class="title-period">.</span></h1>
+          <div class="companion-switch" role="group" aria-label="Choose visible companion">
+            <button type="button" class="companion-choice active" data-companion="beulah" aria-pressed="true">Beulah</button>
+            <button type="button" class="companion-choice" data-companion="prudence" aria-pressed="false">Prudence</button>
+          </div>
+          <p class="muted-copy">Reference appearance from your selected listings. AI conversation connection is configured separately.</p>
         </div>
         <div class="system-metrics">
           <div class="metric-row"><span>AI PROVIDER</span><strong id="providerState" class="state-value">Checking…</strong></div>
@@ -73,7 +49,7 @@
           <div class="metric-row"><span>PHYSICAL MOTION</span><strong class="safe-state"><span class="status-dot"></span> DISABLED</strong></div>
           <div class="metric-row"><span>SHARED MEMORY</span><strong id="memoryState">Connecting…</strong></div>
         </div>
-        <div class="note-card"><span class="note-icon" aria-hidden="true">i</span><p>This is a software simulation. The illustration is an interface avatar, not a live camera feed or a physical robot.</p></div>
+        <div class="note-card"><span class="note-icon" aria-hidden="true">i</span><p>This is a software simulation. The displayed photos are reference images from the selected product listings. They are not animated 3D avatars or a physical robot.</p></div>
       </aside>
 
       <section class="conversation-panel" aria-label="AI conversation">
